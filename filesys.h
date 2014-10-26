@@ -28,13 +28,10 @@
 #define ENDOFCHAIN     0
 #define EOF           -1
 
-
 typedef unsigned char Byte ;
 
-/* create a type fatentry_t, we set this currently to short (16-bit)
- */
+// create a type fatentry_t, we set this currently to short (16-bit)
 typedef short fatentry_t ;
-
 
 // a FAT block is a list of 16-bit entries that form a chain of disk addresses
 
@@ -42,18 +39,16 @@ typedef short fatentry_t ;
 
 typedef fatentry_t fatblock_t [ FATENTRYCOUNT ] ;
 
-
-/* create a type direntry_t
- */
+// create a type direntry_t
 
 typedef struct direntry {
-   int         entrylength ;   // records length of this entry (can be used with names of variables length)
-   Byte        isdir ;
-   Byte        unused ;
-   time_t      modtime ;
-   int         filelength ;
-   fatentry_t  firstblock ;
-   char   name [MAXNAME] ;
+  int         entrylength ;   // records length of this entry (can be used with names of variables length)
+  Byte        isdir ;
+  Byte        unused ;
+  time_t      modtime ;
+  int         filelength ;
+  fatentry_t  firstblock ;
+  char   name [MAXNAME] ;
 } direntry_t ;
 
 // a directory block is an array of directory entries
@@ -61,24 +56,21 @@ typedef struct direntry {
 //const int   direntrycount = (blocksize - (2*sizeof(int)) ) / sizeof(direntry_t) ;
 
 typedef struct dirblock {
-   int isdir ;
-   int nextEntry ;
-   direntry_t entrylist [ DIRENTRYCOUNT ] ; // the first two integer are marker and endpos
+  int isdir ;
+  int nextEntry ;
+  direntry_t entrylist [ DIRENTRYCOUNT ] ; // the first two integer are marker and endpos
 } dirblock_t ;
-
-
 
 // a data block holds the actual data of a filelength, it is an array of 8-bit (byte) elements
 
 typedef Byte datablock_t [ BLOCKSIZE ] ;
 
-
 // a diskblock can be either a directory block, a FAT block or actual data
 
 typedef union block {
-   datablock_t data ;
-   dirblock_t  dir  ;
-   fatblock_t  fat  ;
+  datablock_t data ;
+  dirblock_t  dir  ;
+  fatblock_t  fat  ;
 } diskblock_t ;
 
 // finally, this is the disk: a list of diskblocks
@@ -87,23 +79,19 @@ typedef union block {
 
 extern diskblock_t virtualDisk [ MAXBLOCKS ] ;
 
-
 // when a file is opened on this disk, a file handle has to be
 // created in the opening program
 
 typedef struct filedescriptor {
-   int         pos ;           // byte within a block
-   char        mode[3] ;
-   Byte        writing ;
-   fatentry_t  blockno ;
-   diskblock_t buffer ;
+  int         pos ;           // byte within a block
+  char        mode[3] ;
+  Byte        writing ;
+  fatentry_t  blockno ;
+  diskblock_t buffer ;
 } MyFILE ;
-
-
 
 void format() ;
 void writedisk ( const char * filename ) ;
-
 
 #endif
 
