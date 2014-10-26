@@ -90,8 +90,3 @@ void printBlock(int blockIndex)
 {
    printf("virtualdisk[%d] = %s\n", blockIndex, virtualDisk[blockIndex].data);
 }
-
-int main() {
-   printBlock(0);
-   return 0;
-}
