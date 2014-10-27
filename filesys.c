@@ -109,9 +109,9 @@ void format(char *volumeName)
 {
   diskblock_t block;
   direntry_t  rootDir;
-  int pos = 0;
-  int fatentry = 0;
-  int fatblocksneeded = (MAXBLOCKS / FATENTRYCOUNT);
+  // int pos = 0;
+  // int fatentry = 0;
+  // int fatblocksneeded = (MAXBLOCKS / FATENTRYCOUNT);
 
   for (int i = 0; i < BLOCKSIZE; i++) {
     block.data[i] = '\0';
