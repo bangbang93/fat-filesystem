@@ -5,6 +5,6 @@
 #include <stdlib.h>
 
 int main() {
-  format();
+  format("Charlie's Drive");
   return 0;
 }

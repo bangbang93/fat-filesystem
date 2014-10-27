@@ -105,7 +105,7 @@ void copyFat(fatentry_t *FAT)
 */
 
 // implement format()
-void format()
+void format(char *volumeName)
 {
   diskblock_t block;
   direntry_t  rootDir;
@@ -113,20 +113,13 @@ void format()
   int fatentry = 0;
   int fatblocksneeded = (MAXBLOCKS / FATENTRYCOUNT);
 
-  /*prepare block 0 : fill it with '\0',
-  *use strcpy() to copy some text to it for test purposes
-  *write block 0 to virtual disk
-  */
-
   for (int i = 0; i < BLOCKSIZE; i++) {
     block.data[i] = '\0';
   }
-  strcpy(block.data, "EganDrive");
+
+  memcpy(block.data, volumeName, strlen(volumeName));
   writeBlock(&block, 0, 'd', FALSE);
 
-  /*prepare FAT table
-  *write FAT blocks to virtual disk
-  */
   FAT[0] = ENDOFCHAIN;
   FAT[1] = 2;
   FAT[2] = ENDOFCHAIN;
