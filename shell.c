@@ -5,5 +5,6 @@
 #include <stdlib.h>
 
 int main() {
+  format();
   return 0;
 }
