@@ -39,7 +39,7 @@ typedef short fatentry_t;
 
 typedef struct direntry {
   int         entrylength;   // records length of this entry (can be used with names of variables length)
-  Byte        isdir;
+  Byte        isDir;
   Byte        unused;
   time_t      modtime;
   int         filelength;
@@ -56,7 +56,7 @@ typedef fatentry_t fatblock_t[FATENTRYCOUNT];
 // create a type direntry_t
 
 typedef struct dirblock {
-  int isdir;
+  int isDir;
   int nextEntry;
   direntry_t entrylist[DIRENTRYCOUNT]; // the first two integer are marker and endpos
 } dirblock_t;

@@ -31,6 +31,11 @@ void printBlock(int blockIndex, char type)
     }
     printf("\n");
   }
+  else if (type == 'r') {
+    printf("virtualdisk[%d] = \n", blockIndex);
+    printf("isDir: %d\n", virtualDisk[blockIndex].dir.isDir);
+    printf("nextEntry: %d\n", virtualDisk[blockIndex].dir.nextEntry);
+  }
   else {
     printf("Invalid Type");
   }
@@ -40,9 +45,10 @@ void writedisk(const char *filename)
 {
   printf("writedisk> virtualdisk[0] = %s\n", virtualDisk[0].data);
   FILE *dest = fopen(filename, "w");
+  fwrite(virtualDisk, sizeof(virtualDisk), 1, dest);
   // if(fwrite(virtualDisk, sizeof(virtualDisk), 1, dest) < 0)
-  //    fprintf(stderr, "write virtual disk to disk failed\n");
-  //write(dest, virtualDisk, sizeof(virtualDisk));
+     // fprintf(stderr, "write virtual disk to disk failed\n");
+  // write(dest, virtualDisk, sizeof(virtualDisk));
   fclose(dest);
 }
 
@@ -72,6 +78,9 @@ void writeBlock(diskblock_t *block, int block_address, char type, int print)
     }
     memmove(virtualDisk[block_address].fat, block->fat, BLOCKSIZE);
   }
+  // else if (type == 'r') { //block if dir
+  //   memmove(virtualDisk[block_address].dir, block->dir, BLOCKSIZE);
+  // }
   else {
     printf("Invalid Type");
   }
@@ -108,10 +117,9 @@ void copyFat(fatentry_t *FAT)
 void format(char *volumeName)
 {
   diskblock_t block;
-  direntry_t  rootDir;
   // int pos = 0;
   // int fatentry = 0;
-  // int fatblocksneeded = (MAXBLOCKS / FATENTRYCOUNT);
+  int requiredFatSpace = (MAXBLOCKS / FATENTRYCOUNT);
 
   for (int i = 0; i < BLOCKSIZE; i++) {
     block.data[i] = '\0';
@@ -129,12 +137,11 @@ void format(char *volumeName)
   }
   copyFat(FAT);
 
-  printBlock(0, 'd');
-  printBlock(1, 'f');
-  printBlock(2, 'f');
-  printBlock(3, 'd');
-
-  /*prepare root directory
-  *write root directory block to virtual disk
-  */
+  diskblock_t rootBlock;
+  int rootBlockIndex = requiredFatSpace + 1;
+  rootBlock.dir.isDir = TRUE;
+  rootBlock.dir.nextEntry = 2;
+  writeBlock(&rootBlock, rootBlockIndex, 'd', FALSE);
+  rootDirIndex = rootBlockIndex;
+  currentDirIndex = rootDirIndex;
 }
