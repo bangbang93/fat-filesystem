@@ -17,16 +17,16 @@
 #define FALSE 0
 #endif
 
-#define MAXBLOCKS     1024
-#define BLOCKSIZE     1024
+#define MAXBLOCKS 1024
+#define BLOCKSIZE 1024
 #define FATENTRYCOUNT (BLOCKSIZE / sizeof(fatentry_t))
 #define DIRENTRYCOUNT ((BLOCKSIZE - (2*sizeof(int))) / sizeof(direntry_t))
-#define MAXNAME       256
+#define MAXNAME 256
 #define MAXPATHLENGTH 1024
 
-#define UNUSED        -1
-#define ENDOFCHAIN     0
-#define EOF           -1
+#define UNUSED -1
+#define ENDOFCHAIN 0
+#define EOF -1
 
 typedef unsigned char Byte;
 
