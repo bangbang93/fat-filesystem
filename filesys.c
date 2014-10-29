@@ -8,85 +8,85 @@
 #include <string.h>
 #include <stdlib.h>
 
-diskblock_t virtualDisk[MAXBLOCKS];  // define our in-memory virtual, with MAXBLOCKS blocks
+diskblock_t virtual_disk[MAXBLOCKS];  // define our in-memory virtual, with MAXBLOCKS blocks
 fatentry_t FAT[MAXBLOCKS];            // define a file allocation table with MAXBLOCKS 16-bit entries
-fatentry_t rootDirIndex = 0;          // rootDir will be set by format
-direntry_t *currentDir = NULL;
-fatentry_t currentDirIndex = 0;
+fatentry_t root_dir_index = 0;          // rootDir will be set by format
+direntry_t *current_dir = NULL;
+fatentry_t current_dir_index = 0;
 
-/*writedisk : writes virtual disk out to physical disk
+/*write_disk : writes virtual disk out to physical disk
  *in: file name of stored virtual disk
 */
 
 // use this for testing
-void printBlock(int blockIndex, char type)
+void print_block(int block_index, char type)
 {
   if (type == 'd') {
-    printf("virtualdisk[%d] = %s\n", blockIndex, virtualDisk[blockIndex].data);
+    printf("virtualdisk[%d] = %s\n", block_index, virtual_disk[block_index].data);
   }
   else if (type == 'f') {
-    printf("virtualdisk[%d] = ", blockIndex);
+    printf("virtualdisk[%d] = ", block_index);
     for(int i = 0; i < FATENTRYCOUNT; i++) {
-      printf("%d", virtualDisk[blockIndex].fat[i]);
+      printf("%d", virtual_disk[block_index].fat[i]);
     }
     printf("\n");
   }
   else if (type == 'r') {
-    printf("virtualdisk[%d] = \n", blockIndex);
-    printf("isDir: %d\n", virtualDisk[blockIndex].dir.isDir);
-    printf("nextEntry: %d\n", virtualDisk[blockIndex].dir.nextEntry);
+    printf("virtualdisk[%d] = \n", block_index);
+    printf("is_dir: %d\n", virtual_disk[block_index].dir.is_dir);
+    printf("next_entry: %d\n", virtual_disk[block_index].dir.next_entry);
   }
   else {
     printf("Invalid Type");
   }
 }
 
-void writedisk(const char *filename)
+void write_disk(const char *file_name)
 {
-  printf("writedisk> virtualdisk[0] = %s\n", virtualDisk[0].data);
-  FILE *dest = fopen(filename, "w");
-  fwrite(virtualDisk, sizeof(virtualDisk), 1, dest);
-  // if(fwrite(virtualDisk, sizeof(virtualDisk), 1, dest) < 0)
+  printf("write_disk> virtualdisk[0] = %s\n", virtual_disk[0].data);
+  FILE *dest = fopen(file_name, "w");
+  fwrite(virtual_disk, sizeof(virtual_disk), 1, dest);
+  // if(fwrite(virtual_disk, sizeof(virtual_disk), 1, dest) < 0)
      // fprintf(stderr, "write virtual disk to disk failed\n");
-  // write(dest, virtualDisk, sizeof(virtualDisk));
+  // write(dest, virtual_disk, sizeof(virtual_disk));
   fclose(dest);
 }
 
-void readdisk(const char *filename)
+void read_disk(const char *file_name)
 {
-  FILE *dest = fopen(filename, "r");
-  // if(fread(virtualDisk, sizeof(virtualDisk), 1, dest) < 0)
+  FILE *dest = fopen(file_name, "r");
+  // if(fread(virtual_disk, sizeof(virtual_disk), 1, dest) < 0)
   //    fprintf(stderr, "read from virtual disk to disk failed\n");
-  //write(dest, virtualDisk, sizeof(virtualDisk));
+  //write(dest, virtual_disk, sizeof(virtual_disk));
   fclose(dest);
 }
 
 /*the basic interface to the virtual disk
  *this moves memory around */
 
-void writeBlock(diskblock_t *block, int block_address, char type, int print)
+void write_block(diskblock_t *block, int block_address, char type, int print)
 {
   if (type == 'd') { //block is data
     if (print == 1)
       printf("write block> %d = %s\n", block_address, block->data);
-    memmove(virtualDisk[block_address].data, block->data, BLOCKSIZE);
+    memmove(virtual_disk[block_address].data, block->data, BLOCKSIZE);
   }
   else if (type == 'f') { // block is fat
     if (print == 1) {
       printf("write block> %d = ", block_address);
       for(int i = 0; i < FATENTRYCOUNT; i++) printf("%d", block->fat[i]);
     }
-    memmove(virtualDisk[block_address].fat, block->fat, BLOCKSIZE);
+    memmove(virtual_disk[block_address].fat, block->fat, BLOCKSIZE);
   }
   // else if (type == 'r') { //block if dir
-  //   memmove(virtualDisk[block_address].dir, block->dir, BLOCKSIZE);
+  //   memmove(virtual_disk[block_address].dir, block->dir, BLOCKSIZE);
   // }
   else {
     printf("Invalid Type");
   }
 }
 
-void copyFat(fatentry_t *FAT)
+void copy_fat(fatentry_t *FAT)
 {
   diskblock_t block;
   int index = 0;
@@ -94,7 +94,7 @@ void copyFat(fatentry_t *FAT)
     for(int y = 0; y < (BLOCKSIZE / sizeof(fatentry_t)); y++){
       block.fat[y] = FAT[index++];
     }
-    writeBlock(&block, x, 'f', FALSE);
+    write_block(&block, x, 'f', FALSE);
   }
 }
 
@@ -114,19 +114,19 @@ void copyFat(fatentry_t *FAT)
 */
 
 // implement format()
-void format(char *volumeName)
+void format(char *volume_name)
 {
   diskblock_t block;
   // int pos = 0;
   // int fatentry = 0;
-  int requiredFatSpace = (MAXBLOCKS / FATENTRYCOUNT);
+  int required_fat_space = (MAXBLOCKS / FATENTRYCOUNT);
 
   for (int i = 0; i < BLOCKSIZE; i++) {
     block.data[i] = '\0';
   }
 
-  memcpy(block.data, volumeName, strlen(volumeName));
-  writeBlock(&block, 0, 'd', FALSE);
+  memcpy(block.data, volume_name, strlen(volume_name));
+  write_block(&block, 0, 'd', FALSE);
 
   FAT[0] = ENDOFCHAIN;
   FAT[1] = 2;
@@ -135,13 +135,13 @@ void format(char *volumeName)
   for(int i = 4; i < MAXBLOCKS; i++){
     FAT[i] = UNUSED;
   }
-  copyFat(FAT);
+  copy_fat(FAT);
 
-  diskblock_t rootBlock;
-  int rootBlockIndex = requiredFatSpace + 1;
-  rootBlock.dir.isDir = TRUE;
-  rootBlock.dir.nextEntry = 2;
-  writeBlock(&rootBlock, rootBlockIndex, 'd', FALSE);
-  rootDirIndex = rootBlockIndex;
-  currentDirIndex = rootDirIndex;
+  diskblock_t root_block;
+  int root_block_index = required_fat_space + 1;
+  root_block.dir.is_dir = TRUE;
+  root_block.dir.next_entry = 2;
+  write_block(&root_block, root_block_index, 'd', FALSE);
+  root_dir_index = root_block_index;
+  current_dir_index = root_dir_index;
 }

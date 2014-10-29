@@ -39,11 +39,11 @@ typedef short fatentry_t;
 
 typedef struct direntry {
   int         entrylength;   // records length of this entry (can be used with names of variables length)
-  Byte        isDir;
+  Byte        is_dir;
   Byte        unused;
   time_t      modtime;
-  int         filelength;
-  fatentry_t  firstblock;
+  int         file_length;
+  fatentry_t  first_block;
   char   name [MAXNAME];
 } direntry_t;
 
@@ -56,12 +56,12 @@ typedef fatentry_t fatblock_t[FATENTRYCOUNT];
 // create a type direntry_t
 
 typedef struct dirblock {
-  int isDir;
-  int nextEntry;
+  int is_dir;
+  int next_entry;
   direntry_t entrylist[DIRENTRYCOUNT]; // the first two integer are marker and endpos
 } dirblock_t;
 
-// a data block holds the actual data of a filelength, it is an array of 8-bit (byte) elements
+// a data block holds the actual data of a file_length, it is an array of 8-bit (byte) elements
 
 typedef Byte datablock_t[BLOCKSIZE];
 
@@ -75,9 +75,9 @@ typedef union block {
 
 // finally, this is the disk: a list of diskblocks
 // the disk is declared as extern, as it is shared in the program
-// it has to be defined in the main program filelength
+// it has to be defined in the main program file_length
 
-extern diskblock_t virtualDisk[MAXBLOCKS];
+extern diskblock_t virtual_disk[MAXBLOCKS];
 
 // when a file is opened on this disk, a file handle has to be
 // created in the opening program
@@ -91,7 +91,7 @@ typedef struct filedescriptor {
 } MyFILE;
 
 void format();
-void writedisk(const char * filename);
+void write_disk(const char * file_name);
 
 #endif
 

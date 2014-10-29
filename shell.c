@@ -6,6 +6,6 @@
 
 int main() {
   format("CS3026 Operating Systems Assessment 2014");
-  writedisk("virtualdisk");
+  write_disk("virtualdisk");
   return 0;
 }
