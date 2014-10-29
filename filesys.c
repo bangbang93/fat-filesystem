@@ -17,6 +17,23 @@ fatentry_t current_dir_index = 0;
 /*write_disk : writes virtual disk out to physical disk
  *in: file name of stored virtual disk
 */
+void write_disk(const char *file_name)
+{
+  printf("write_disk> %s\n", virtual_disk[0].data);
+  FILE *dest = fopen(file_name, "w");
+  fwrite(virtual_disk, sizeof(virtual_disk), 1, dest);
+  // write(dest, virtual_disk, sizeof(virtual_disk));
+  fclose(dest);
+}
+
+void read_disk(const char *file_name)
+{
+  FILE *dest = fopen(file_name, "r");
+  // if(fread(virtual_disk, sizeof(virtual_disk), 1, dest) < 0)
+  //    fprintf(stderr, "read from virtual disk to disk failed\n");
+  //write(dest, virtual_disk, sizeof(virtual_disk));
+  fclose(dest);
+}
 
 // use this for testing
 void print_block(int block_index, char type)
@@ -39,26 +56,6 @@ void print_block(int block_index, char type)
   else {
     printf("Invalid Type");
   }
-}
-
-void write_disk(const char *file_name)
-{
-  printf("write_disk> virtualdisk[0] = %s\n", virtual_disk[0].data);
-  FILE *dest = fopen(file_name, "w");
-  fwrite(virtual_disk, sizeof(virtual_disk), 1, dest);
-  // if(fwrite(virtual_disk, sizeof(virtual_disk), 1, dest) < 0)
-     // fprintf(stderr, "write virtual disk to disk failed\n");
-  // write(dest, virtual_disk, sizeof(virtual_disk));
-  fclose(dest);
-}
-
-void read_disk(const char *file_name)
-{
-  FILE *dest = fopen(file_name, "r");
-  // if(fread(virtual_disk, sizeof(virtual_disk), 1, dest) < 0)
-  //    fprintf(stderr, "read from virtual disk to disk failed\n");
-  //write(dest, virtual_disk, sizeof(virtual_disk));
-  fclose(dest);
 }
 
 /*the basic interface to the virtual disk
