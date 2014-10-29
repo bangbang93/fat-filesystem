@@ -87,6 +87,26 @@ void write_block(diskblock_t *block, int block_address, char type, int print)
   }
 }
 
+void read_block(diskblock_t *block, int block_address, char type, int print)
+{
+  if (type == 'd') { //block is data
+    if (print == 1)
+      printf("read block> %d = %s\n", block_address, virtual_disk[block_address].data);
+    memmove(block->data, virtual_disk[block_address].data, BLOCKSIZE);
+  }
+  else if (type == 'f') { // block is fat
+    if (print == 1) {
+      printf("read block> %d = ", block_address);
+      for(int i = 0; i < FATENTRYCOUNT; i++) printf("%d", virtual_disk[block_address].fat[i]);
+      printf("\n");
+    }
+    memmove(block->fat, virtual_disk[block_address].fat, BLOCKSIZE);
+  }
+  else {
+    printf("Invalid Type");
+  }
+}
+
 void copy_fat(fatentry_t *FAT)
 {
   diskblock_t block;
