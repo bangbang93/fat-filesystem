@@ -14,9 +14,6 @@ fatentry_t root_dir_index = 0;          // rootDir will be set by format
 direntry_t *current_dir = NULL;
 fatentry_t current_dir_index = 0;
 
-/*write_disk : writes virtual disk out to physical disk
- *in: file name of stored virtual disk
-*/
 void write_disk(const char *file_name)
 {
   printf("write_disk> %s\n", virtual_disk[0].data);
@@ -35,7 +32,6 @@ void read_disk(const char *file_name)
   fclose(dest);
 }
 
-// use this for testing
 void print_block(int block_index, char type)
 {
   if (type == 'd') {
@@ -60,7 +56,6 @@ void print_block(int block_index, char type)
 
 /*the basic interface to the virtual disk
  *this moves memory around */
-
 void write_block(diskblock_t *block, int block_address, char type, int print)
 {
   if (type == 'd') { //block is data
@@ -116,22 +111,6 @@ void copy_fat(fatentry_t *FAT)
   }
 }
 
-/*read and write FAT
- please note: a FAT entry is a short, this is a 16-bit word, or 2 bytes
-  our blocksize for the virtual disk is 1024, therefore
-  we can store 512 FAT entries in one block
-
-  how many disk blocks do we need to store the complete FAT:
-  - our virtual disk has MAXBLOCKS blocks, which is currently 1024
-    each block is 1024 bytes long
-  - our FAT has MAXBLOCKS entries, which is currently 1024
-    each FAT entry is a fatentry_t, which is currently 2 bytes
-  - we need(MAXBLOCKS /(BLOCKSIZE / sizeof(fatentry_t))) blocks to store the
-    FAT
-  - each block can hold(BLOCKSIZE / sizeof(fatentry_t)) fat entries
-*/
-
-// implement format()
 void format(char *volume_name)
 {
   diskblock_t block;
