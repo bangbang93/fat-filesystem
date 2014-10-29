@@ -141,7 +141,7 @@ void format(char *volume_name)
   diskblock_t root_block;
   int root_block_index = required_fat_space + 1;
   root_block.dir.is_dir = TRUE;
-  root_block.dir.next_entry = 2;
+  root_block.dir.next_entry = 0;
   write_block(&root_block, root_block_index, 'd', FALSE);
   root_dir_index = root_block_index;
   current_dir_index = root_dir_index;
