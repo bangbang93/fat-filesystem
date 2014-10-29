@@ -75,6 +75,7 @@ void write_block(diskblock_t *block, int block_address, char type, int print)
     if (print == 1) {
       printf("write block> %d = ", block_address);
       for(int i = 0; i < FATENTRYCOUNT; i++) printf("%d", block->fat[i]);
+      printf("\n");
     }
     memmove(virtual_disk[block_address].fat, block->fat, BLOCKSIZE);
   }
