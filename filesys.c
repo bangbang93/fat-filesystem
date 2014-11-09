@@ -199,6 +199,7 @@ void save_file()
   my_file_t *file = malloc(sizeof(my_file_t));
   file->pos = 0;
   file->writing = 0;
+  memcpy(file->mode, "cf\0", strlen("cf\0"));
   file->blockno = next_unallocated_block();
   file->buffer = block1;
   create_file(file);
