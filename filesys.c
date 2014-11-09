@@ -142,3 +142,79 @@ void format(char *volume_name)
   root_dir_index = root_block_index;
   current_dir_index = root_dir_index;
 }
+
+void init_block(diskblock_t *block)
+{
+  for (int i = 0; i < BLOCKSIZE; i++) {
+    block->data[i] = '\0';
+  }
+}
+
+int next_unallocated_block()
+{
+  for(int i = 0; i < MAXBLOCKS; i++){
+    if (FAT[i] == UNUSED){
+      FAT[i] = 0;
+      copy_fat(FAT);
+      return i;
+    }
+  }
+  return -1; //disk is full
+}
+
+int last_block_in_file(my_file_t *file)
+{
+  int next_block = file->blockno;
+  while (FAT[next_block] != 0) {
+    next_block = FAT[next_block];
+  }
+  return next_block;
+}
+
+void create_file(my_file_t *file){
+  write_block(&file->buffer, file->blockno, 'd', FALSE);
+}
+
+void append_file(my_file_t *file, diskblock_t *block){
+  int location = next_unallocated_block();
+  FAT[last_block_in_file(file)] = location;
+  copy_fat(FAT);
+  write_block(block, location, 'd', FALSE);
+}
+
+void read_file(my_file_t *file){
+  int next_block = file->blockno;
+  while (FAT[next_block] != 0) {
+    print_block(next_block, 'd');
+    next_block = FAT[next_block];
+  }
+}
+
+void save_file()
+{
+  diskblock_t block1;
+  init_block(&block1);
+  memcpy(block1.data, "filename\0", strlen("filename\0"));
+
+  my_file_t *file = malloc(sizeof(my_file_t));
+  file->pos = 0;
+  file->writing = 0;
+  file->blockno = next_unallocated_block();
+  file->buffer = block1;
+  create_file(file);
+  memcpy(block1.data, "contents1\0", strlen("contents1\0"));
+  append_file(file, &block1);
+  memcpy(block1.data, "contents2\0", strlen("contents2\0"));
+  append_file(file, &block1);
+  memcpy(block1.data, "contents3\0", strlen("contents3\0"));
+  append_file(file, &block1);
+  memcpy(block1.data, "contents4\0", strlen("contents4\0"));
+  append_file(file, &block1);
+
+  read_file(file);
+
+  for(int i = 0; i < 20; i++){
+    printf("%d  ", FAT[i]);
+  }
+  printf("\n");
+}

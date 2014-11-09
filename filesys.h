@@ -84,14 +84,15 @@ extern diskblock_t virtual_disk[MAXBLOCKS];
 
 typedef struct filedescriptor {
   int         pos;           // byte within a block
-  char        mode[3];
+  char        mode[3]; //file mode, r w etc
   Byte        writing;
-  fatentry_t  blockno;
+  fatentry_t  blockno; //where the first block is
   diskblock_t buffer;
-} MyFILE;
+} my_file_t;
 
 void format();
 void write_disk(const char * file_name);
+void save_file();
 
 #endif
 
