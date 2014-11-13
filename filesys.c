@@ -193,60 +193,94 @@ void read_file(my_file_t *file){
 int file_index(char *filename){
   for(int i = 0; i < MAXBLOCKS; i++){
     if (memcmp(virtual_disk[i].data, filename, strlen(filename) + 1) == 0){
-      printf("found\n");
       return i;
     }
   }
   return -1;
 }
 
-my_file_t *myfopen(char *filename, char *mode){
+// r,w,a
+my_file_t *myfopen(char *filename, char *mode)
+{
   int location_on_disk = file_index(filename);
-  diskblock_t first_block = virtual_disk[location_on_disk];
+  diskblock_t first_block = virtual_disk[location_on_disk]; //should this be malloc?
   if(location_on_disk == -1){
-    printf("Creating new file\n");
+    printf("File did not exist. Creating new file: %s\n", filename);
     location_on_disk = next_unallocated_block();
     init_block(&first_block);
     memcpy(first_block.data, filename, strlen(filename));
     write_block(&first_block, location_on_disk, 'd', FALSE);
   }
   my_file_t *file = malloc(sizeof(my_file_t));
-  // file->pos = 0;
-  // file->writing = 0;
+  file->pos = 0;
+  file->writing = 0;
   memcpy(file->mode, mode, strlen(mode));
-  file->blockno = next_unallocated_block();
+  file->blockno = location_on_disk;
   file->buffer = first_block;
+
+  // add a second block
+  FAT[location_on_disk] = next_unallocated_block();;
+  diskblock_t second_block = virtual_disk[FAT[location_on_disk]];
+  init_block(&second_block);
+  memcpy(second_block.data, "content", strlen("content"));
+  write_block(&second_block, FAT[location_on_disk], 'd', FALSE);
+
+  // add a 3rd block
+  FAT[FAT[location_on_disk]] = next_unallocated_block(); //i know FAT[FAT[location_on_disk]] isn't really on...
+  diskblock_t third_block = virtual_disk[FAT[FAT[location_on_disk]]];
+  init_block(&third_block);
+  memcpy(third_block.data, "content2", strlen("content2"));
+  write_block(&third_block, FAT[FAT[location_on_disk]], 'd', FALSE);
+
   return file;
+}
+
+char myfgetc(my_file_t *file)
+{
+  int position = file->pos;
+  file->pos++;
+  // if ((file->pos > strlen(file->buffer.data)) && (FAT[file->blockno] == 0)){
+  //   printf("one\n");
+  //   return '\0';
+  // }
+  // else
+  if ((file->buffer.data[position] == NULL) && (FAT[file->blockno] != 0)){
+    printf(" - AGAIN!!! - ");
+    file->pos = 1;
+    file->blockno = FAT[file->blockno];
+    file->buffer = virtual_disk[file->blockno];
+    return file->buffer.data[file->pos - 1];
+  }
+  else {
+    return file->buffer.data[position];
+  }
 }
 
 void save_file()
 {
-  diskblock_t block1;
-  init_block(&block1);
-  memcpy(block1.data, "filename\0", strlen("filename\0"));
-
-  my_file_t *file = malloc(sizeof(my_file_t));
-  file->pos = 0;
-  file->writing = 0;
-  memcpy(file->mode, "cf\0", strlen("cf\0"));
-  file->blockno = next_unallocated_block();
-  file->buffer = block1;
-  create_file(file);
-  memcpy(block1.data, "contents1\0", strlen("contents1\0"));
-  append_file(file, &block1);
-  memcpy(block1.data, "contents2\0", strlen("contents2\0"));
-  append_file(file, &block1);
-  memcpy(block1.data, "contents3\0", strlen("contents3\0"));
-  append_file(file, &block1);
-  memcpy(block1.data, "contents4\0", strlen("contents4\0"));
-  append_file(file, &block1);
-
-  read_file(file);
-
   for(int i = 0; i < 20; i++){
     printf("%d  ", FAT[i]);
   }
   printf("\n");
 
-  myfopen("charlie", "r");
+  my_file_t *file1 = myfopen("charlie", "r");
+
+  print_block(file1->blockno, 'd');
+  printf("%s\n", file1->mode);
+
+  char c;
+  do {
+    c = myfgetc(file1);
+    if( c == NULL )
+    {
+      break;
+    }
+    printf("%c", c);
+  } while(1);
+  printf("\n");
+
+  for(int i = 0; i < 20; i++){
+    printf("%d  ", FAT[i]);
+  }
+  printf("\n");
 }
