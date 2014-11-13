@@ -190,6 +190,16 @@ void read_file(my_file_t *file){
   }
 }
 
+int file_index(char *filename){
+  for(int i = 0; i < MAXBLOCKS; i++){
+    if (memcmp(virtual_disk[i].data, filename, strlen(filename) + 1) == 0){
+      printf("found\n");
+      return i;
+    }
+  }
+  return -1;
+}
+
 void save_file()
 {
   diskblock_t block1;
@@ -218,4 +228,6 @@ void save_file()
     printf("%d  ", FAT[i]);
   }
   printf("\n");
+
+  printf("%d\n", file_index("filename"));
 }
