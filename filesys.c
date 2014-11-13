@@ -200,6 +200,25 @@ int file_index(char *filename){
   return -1;
 }
 
+my_file_t *myfopen(char *filename, char *mode){
+  int location_on_disk = file_index(filename);
+  diskblock_t first_block = virtual_disk[location_on_disk];
+  if(location_on_disk == -1){
+    printf("Creating new file\n");
+    location_on_disk = next_unallocated_block();
+    init_block(&first_block);
+    memcpy(first_block.data, filename, strlen(filename));
+    write_block(&first_block, location_on_disk, 'd', FALSE);
+  }
+  my_file_t *file = malloc(sizeof(my_file_t));
+  // file->pos = 0;
+  // file->writing = 0;
+  memcpy(file->mode, mode, strlen(mode));
+  file->blockno = next_unallocated_block();
+  file->buffer = first_block;
+  return file;
+}
+
 void save_file()
 {
   diskblock_t block1;
@@ -229,5 +248,5 @@ void save_file()
   }
   printf("\n");
 
-  printf("%d\n", file_index("filename"));
+  myfopen("charlie", "r");
 }
