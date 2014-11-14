@@ -251,11 +251,19 @@ char myfgetc(my_file_t *file)
   }
 }
 
-void myfputc(char character, my_file_t *file)
+int myfputc(char character, my_file_t *file)
 {
   file->buffer.data[file->pos] = character;
   file->pos++;
   write_block(&file->buffer, file->blockno, 'd', FALSE);
+  return 0; //unless there's an error?
+}
+
+int myfclose(my_file_t *file)
+{
+  free(file);
+  file = NULL;
+  return 0; //unless there's an error?
 }
 
 void save_file()
@@ -285,6 +293,9 @@ void save_file()
   myfputc('e', file1);
   myfputc('s', file1);
   myfputc('!', file1);
+
+  myfclose(file1);
+  printf("is the file still here?: %s\n", file1->mode);
 
   printf("\n");
 }
