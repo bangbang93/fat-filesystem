@@ -222,14 +222,14 @@ my_file_t *myfopen(char *filename, char *mode)
   FAT[location_on_disk] = next_unallocated_block();;
   diskblock_t second_block = virtual_disk[FAT[location_on_disk]];
   init_block(&second_block);
-  memcpy(second_block.data, "content", strlen("content"));
+  memcpy(second_block.data, "content for file", strlen("content for file"));
   write_block(&second_block, FAT[location_on_disk], 'd', FALSE);
 
   // add a 3rd block
   FAT[FAT[location_on_disk]] = next_unallocated_block(); //i know FAT[FAT[location_on_disk]] isn't really on...
   diskblock_t third_block = virtual_disk[FAT[FAT[location_on_disk]]];
   init_block(&third_block);
-  memcpy(third_block.data, "content2", strlen("content2"));
+  memcpy(third_block.data, "content2 for file", strlen("content2 for file"));
   write_block(&third_block, FAT[FAT[location_on_disk]], 'd', FALSE);
 
   return file;
@@ -239,11 +239,6 @@ char myfgetc(my_file_t *file)
 {
   int position = file->pos;
   file->pos++;
-  // if ((file->pos > strlen(file->buffer.data)) && (FAT[file->blockno] == 0)){
-  //   printf("one\n");
-  //   return '\0';
-  // }
-  // else
   if ((file->buffer.data[position] == NULL) && (FAT[file->blockno] != 0)){
     printf(" - AGAIN!!! - ");
     file->pos = 1;
