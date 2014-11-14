@@ -222,14 +222,14 @@ my_file_t *myfopen(char *filename, char *mode)
   FAT[location_on_disk] = next_unallocated_block();;
   diskblock_t second_block = virtual_disk[FAT[location_on_disk]];
   init_block(&second_block);
-  memcpy(second_block.data, "content for file", strlen("content for file"));
+  memcpy(second_block.data, "content", strlen("content"));
   write_block(&second_block, FAT[location_on_disk], 'd', FALSE);
 
   // add a 3rd block
   FAT[FAT[location_on_disk]] = next_unallocated_block(); //i know FAT[FAT[location_on_disk]] isn't really on...
   diskblock_t third_block = virtual_disk[FAT[FAT[location_on_disk]]];
   init_block(&third_block);
-  memcpy(third_block.data, "content2 for file", strlen("content2 for file"));
+  memcpy(third_block.data, "content2", strlen("content2"));
   write_block(&third_block, FAT[FAT[location_on_disk]], 'd', FALSE);
 
   return file;
@@ -249,6 +249,13 @@ char myfgetc(my_file_t *file)
   else {
     return file->buffer.data[position];
   }
+}
+
+void myfputc(char character, my_file_t *file)
+{
+  file->buffer.data[file->pos] = character;
+  file->pos++;
+  write_block(&file->buffer, file->blockno, 'd', FALSE);
 }
 
 void save_file()
@@ -274,8 +281,10 @@ void save_file()
   } while(1);
   printf("\n");
 
-  for(int i = 0; i < 20; i++){
-    printf("%d  ", FAT[i]);
-  }
+  myfputc('y', file1);
+  myfputc('e', file1);
+  myfputc('s', file1);
+  myfputc('!', file1);
+
   printf("\n");
 }
