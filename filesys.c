@@ -213,7 +213,7 @@ my_file_t *myfopen(char *filename, char *mode)
   file->buffer = first_block;
 
   // add a second block
-  FAT[location_on_disk] = next_unallocated_block();;
+  FAT[location_on_disk] = next_unallocated_block();
   diskblock_t second_block = virtual_disk[FAT[location_on_disk]];
   init_block(&second_block);
   memcpy(second_block.data, "content", strlen("content"));
@@ -248,9 +248,25 @@ int myfputc(char character, my_file_t *file)
     printf("Write of '%c' Failed: File is 'Read Only'\n", character);
     return EOF;
   } else {
+    if (file->pos >= BLOCKSIZE){
+      if(FAT[file->blockno] != 0){
+        file->pos = 0;
+        file->blockno = FAT[file->blockno];
+        file->buffer = virtual_disk[file->blockno];
+      } else {
+        FAT[file->blockno] = next_unallocated_block();
+        diskblock_t new_block = virtual_disk[FAT[file->blockno]];
+        init_block(&new_block);
+        write_block(&new_block, FAT[file->blockno], 'd', FALSE);
+        FAT[FAT[file->blockno]] = 0;
+        copy_fat(FAT);
+      }
+    }
+
     file->buffer.data[file->pos] = character;
     file->pos++;
     write_block(&file->buffer, file->blockno, 'd', FALSE);
+
     return 0;
   }
 }

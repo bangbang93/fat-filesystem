@@ -9,6 +9,15 @@ int main() {
 
   // save_file();
 
+  my_file_t *test_file = myfopen("testfile.txt", "w");
+
+  for (int i = 0; i < 5; i++){
+    for (int j = 0; j < BLOCKSIZE; j++){
+      // printf("%d\n",j);
+      myfputc('c', test_file);
+    }
+  }
+
   write_disk("virtualdisk\0");
 
   return 0;
