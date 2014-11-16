@@ -182,20 +182,16 @@ int file_index(char *filename){
 
 void move_pos_to_end(my_file_t *file){
   //last block
-  do {
+  while(1) {
     file->blockno = FAT[file->blockno];
-    if(FAT[file->blockno] == 0){
-      break;
-    }
-  } while(1);
+    if(FAT[file->blockno] == 0) break;
+  }
 
   // last character
   file->buffer = virtual_disk[file->blockno];
-  do {
-    if(file->buffer.data[file->pos+++1] == '\0'){
-      break;
-    }
-  } while(1);
+  while(1) {
+    if(file->buffer.data[file->pos+++1] == '\0') break;
+  }
 }
 
 my_file_t *myfopen(char *filename, char *mode)
