@@ -262,7 +262,6 @@ int myfputc(char character, my_file_t *file)
 int myfclose(my_file_t *file)
 {
   free(file);
-  file = NULL;
   return 0; //unless there's an error?
 }
 
@@ -295,7 +294,6 @@ void save_file()
   myfputc('!', file1);
 
   myfclose(file1);
-  printf("is the file still here?: %s\n", file1->mode);
 
   printf("\n");
 }
