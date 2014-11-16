@@ -199,7 +199,24 @@ int file_index(char *filename){
   return -1;
 }
 
-// r,w,a
+void move_pos_to_end(my_file_t *file){
+  //last block
+  do {
+    file->blockno = FAT[file->blockno];
+    if(FAT[file->blockno] == 0){
+      break;
+    }
+  } while(1);
+
+  // last character
+  file->buffer = virtual_disk[file->blockno];
+  do {
+    if(file->buffer.data[file->pos+++1] == '\0'){
+      break;
+    }
+  } while(1);
+}
+
 my_file_t *myfopen(char *filename, char *mode)
 {
   int location_on_disk = file_index(filename);
@@ -225,12 +242,9 @@ my_file_t *myfopen(char *filename, char *mode)
   memcpy(second_block.data, "content", strlen("content"));
   write_block(&second_block, FAT[location_on_disk], 'd', FALSE);
 
-  // add a 3rd block
-  FAT[FAT[location_on_disk]] = next_unallocated_block(); //i know FAT[FAT[location_on_disk]] isn't really on...
-  diskblock_t third_block = virtual_disk[FAT[FAT[location_on_disk]]];
-  init_block(&third_block);
-  memcpy(third_block.data, "content2", strlen("content2"));
-  write_block(&third_block, FAT[FAT[location_on_disk]], 'd', FALSE);
+  if(strncmp(file->mode, "a", 1) == 0){
+    move_pos_to_end(file);
+  }
 
   return file;
 }
@@ -240,7 +254,7 @@ char myfgetc(my_file_t *file)
   int position = file->pos;
   file->pos++;
   if ((file->buffer.data[position] == '\0') && (FAT[file->blockno] != 0)){
-    printf(" - AGAIN!!! - ");
+    printf(" - NEXT BLOCK - ");
     file->pos = 1;
     file->blockno = FAT[file->blockno];
     file->buffer = virtual_disk[file->blockno];
@@ -272,19 +286,11 @@ int myfclose(my_file_t *file)
 
 void save_file()
 {
-  for(int i = 0; i < 20; i++){
-    printf("%d  ", FAT[i]);
-  }
-  printf("\n");
-
-  my_file_t *file1 = myfopen("charlie.txt", "r");
-
-  print_block(file1->blockno, 'd');
-  printf("%s\n", file1->mode);
-
+  // read
+  my_file_t *read_file = myfopen("read.txt", "r");
   char c;
   do {
-    c = myfgetc(file1);
+    c = myfgetc(read_file);
     if( c == '\0' )
     {
       break;
@@ -293,12 +299,22 @@ void save_file()
   } while(1);
   printf("\n");
 
-  myfputc('y', file1);
-  myfputc('e', file1);
-  myfputc('s', file1);
-  myfputc('!', file1);
+  //write
+  my_file_t *write_file = myfopen("write.txt", "w");
+  myfputc('1', write_file);
+  myfputc('2', write_file);
+  printf("\n");
 
-  myfclose(file1);
+  //append
+  my_file_t *append_file = myfopen("append.txt", "a");
+  myfputc('1', append_file);
+  myfputc('2', append_file);
+  printf("\n");
+
+  // close file
+  myfclose(read_file);
+  myfclose(write_file);
+  myfclose(append_file);
 
   printf("\n");
 }
