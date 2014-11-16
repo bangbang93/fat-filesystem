@@ -253,10 +253,15 @@ char myfgetc(my_file_t *file)
 
 int myfputc(char character, my_file_t *file)
 {
-  file->buffer.data[file->pos] = character;
-  file->pos++;
-  write_block(&file->buffer, file->blockno, 'd', FALSE);
-  return 0; //unless there's an error?
+  if(strncmp(file->mode, "r", 1) == 0){
+    printf("Write of '%c' Failed: File is 'Read Only'\n", character);
+    return EOF;
+  } else {
+    file->buffer.data[file->pos] = character;
+    file->pos++;
+    write_block(&file->buffer, file->blockno, 'd', FALSE);
+    return 0;
+  }
 }
 
 int myfclose(my_file_t *file)
@@ -272,7 +277,7 @@ void save_file()
   }
   printf("\n");
 
-  my_file_t *file1 = myfopen("charlie", "r");
+  my_file_t *file1 = myfopen("charlie.txt", "r");
 
   print_block(file1->blockno, 'd');
   printf("%s\n", file1->mode);
