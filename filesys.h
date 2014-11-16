@@ -86,13 +86,19 @@ typedef struct filedescriptor {
   int         pos;           // byte within a block
   char        mode[3]; //file mode, r w etc
   Byte        writing;
-  fatentry_t  blockno; //where the first block is
+  fatentry_t  blockno; //no, this is the index of the current block
   diskblock_t buffer;
 } my_file_t;
 
 void format();
 void write_disk(const char * file_name);
 void save_file();
+
+// file handling functions
+my_file_t *myfopen(char *filename, char *mode);
+char myfgetc(my_file_t *file);
+int myfputc(char character, my_file_t *file);
+int myfclose(my_file_t *file);
 
 #endif
 

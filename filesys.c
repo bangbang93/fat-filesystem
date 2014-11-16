@@ -171,25 +171,6 @@ int last_block_in_file(my_file_t *file)
   return next_block;
 }
 
-void create_file(my_file_t *file){
-  write_block(&file->buffer, file->blockno, 'd', FALSE);
-}
-
-void append_file(my_file_t *file, diskblock_t *block){
-  int location = next_unallocated_block();
-  FAT[last_block_in_file(file)] = location;
-  copy_fat(FAT);
-  write_block(block, location, 'd', FALSE);
-}
-
-void read_file(my_file_t *file){
-  int next_block = file->blockno;
-  while (FAT[next_block] != 0) {
-    print_block(next_block, 'd');
-    next_block = FAT[next_block];
-  }
-}
-
 int file_index(char *filename){
   for(int i = 0; i < MAXBLOCKS; i++){
     if (memcmp(virtual_disk[i].data, filename, strlen(filename) + 1) == 0){
@@ -284,37 +265,37 @@ int myfclose(my_file_t *file)
   return 0; //unless there's an error?
 }
 
-void save_file()
-{
-  // read
-  my_file_t *read_file = myfopen("read.txt", "r");
-  char c;
-  do {
-    c = myfgetc(read_file);
-    if( c == '\0' )
-    {
-      break;
-    }
-    printf("%c", c);
-  } while(1);
-  printf("\n");
+// void save_file()
+// {
+//   // read
+//   my_file_t *read_file = myfopen("read.txt", "r");
+//   char c;
+//   do {
+//     c = myfgetc(read_file);
+//     if( c == '\0' )
+//     {
+//       break;
+//     }
+//     printf("%c", c);
+//   } while(1);
+//   printf("\n");
 
-  //write
-  my_file_t *write_file = myfopen("write.txt", "w");
-  myfputc('1', write_file);
-  myfputc('2', write_file);
-  printf("\n");
+//   //write
+//   my_file_t *write_file = myfopen("write.txt", "w");
+//   myfputc('1', write_file);
+//   myfputc('2', write_file);
+//   printf("\n");
 
-  //append
-  my_file_t *append_file = myfopen("append.txt", "a");
-  myfputc('1', append_file);
-  myfputc('2', append_file);
-  printf("\n");
+//   //append
+//   my_file_t *append_file = myfopen("append.txt", "a");
+//   myfputc('1', append_file);
+//   myfputc('2', append_file);
+//   printf("\n");
 
-  // close file
-  myfclose(read_file);
-  myfclose(write_file);
-  myfclose(append_file);
+//   // close file
+//   myfclose(read_file);
+//   myfclose(write_file);
+//   myfclose(append_file);
 
-  printf("\n");
-}
+//   printf("\n");
+// }
