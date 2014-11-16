@@ -239,7 +239,7 @@ char myfgetc(my_file_t *file)
 {
   int position = file->pos;
   file->pos++;
-  if ((file->buffer.data[position] == NULL) && (FAT[file->blockno] != 0)){
+  if ((file->buffer.data[position] == '\0') && (FAT[file->blockno] != 0)){
     printf(" - AGAIN!!! - ");
     file->pos = 1;
     file->blockno = FAT[file->blockno];
@@ -280,7 +280,7 @@ void save_file()
   char c;
   do {
     c = myfgetc(file1);
-    if( c == NULL )
+    if( c == '\0' )
     {
       break;
     }
