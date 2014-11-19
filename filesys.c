@@ -54,6 +54,14 @@ void print_block(int block_index, char type)
   }
 }
 
+void print_fat(int length)
+{
+  for(int i = 0; i < length; i++){
+    printf("%d, ", FAT[i]);
+  }
+  printf("\n");
+}
+
 /*the basic interface to the virtual disk
  *this moves memory around */
 void write_block(diskblock_t *block, int block_address, char type, int print)
