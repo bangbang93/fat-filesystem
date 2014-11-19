@@ -244,15 +244,13 @@ char myfgetc(my_file_t *file)
 {
   int position = file->pos;
   file->pos++;
-  if (((file->pos > 1023) || (file->buffer.data[position] == '\0')) && (FAT[file->blockno] != 0)){
-    printf("\n%d\n", file->pos);
-    file->pos = 0;
+  if ((file->buffer.data[position] == '\0') && (FAT[file->blockno] != 0)){
+    file->pos = 1;
     file->blockno = FAT[file->blockno];
     file->buffer = virtual_disk[file->blockno];
-    printf("\n%d\n", file->blockno);
-    return file->buffer.data[file->pos];
+    return file->buffer.data[file->pos - 1];
   }
-  else if ((file->pos > 1023) && FAT[file->blockno] == 0) {
+  else if ((file->pos > 1024) && FAT[file->blockno] == 0) {
     return EOF;
   }
   else {

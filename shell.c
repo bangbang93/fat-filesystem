@@ -22,20 +22,18 @@ int main() {
   myfclose(test_file);
 
   print_fat(10);
-  // my_file_t *test_file2 = myfopen("testfile.txt", "r");
-  // move_to_data(test_file2);
-  // for(int i = 0; i < 4 * BLOCKSIZE; i++){
-  //   char character = myfgetc(test_file);
-  //   printf("%c", character);
-  // }
-  // printf("\n%d\n", test_file->pos);
-  // printf("\n");
 
-  // print_block(4, 'd');
-  // print_block(5, 'd');
-  // print_block(6, 'd');
-  // print_block(7, 'd');
-  // print_block(8, 'd');
+  my_file_t *test_file2 = myfopen("testfile.txt", "r");
+  move_to_data(test_file2);
+  while(1){
+    char character = myfgetc(test_file);
+    if (character == EOF){
+      break;
+    }
+    printf("%c", character);
+  }
+  printf("\n");
+
 
   // Save the changes made to the virtual disk
   write_disk("virtualdisk\0");
