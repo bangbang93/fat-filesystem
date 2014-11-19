@@ -35,7 +35,12 @@ void read_disk(const char *file_name)
 void print_block(int block_index, char type)
 {
   if (type == 'd') {
-    printf("virtualdisk[%d] = %s\n", block_index, virtual_disk[block_index].data);
+    printf("virtualdisk[%d] = ", block_index);
+    for (int i = 0; i < BLOCKSIZE; i++)
+    {
+      printf("%c", virtual_disk[block_index].data[i]);
+    }
+    printf("\n");
   }
   else if (type == 'f') {
     printf("virtualdisk[%d] = ", block_index);
