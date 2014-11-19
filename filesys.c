@@ -212,7 +212,14 @@ my_file_t *myfopen(char *filename, char *mode)
     init_block(&first_block);
     memcpy(first_block.data, filename, strlen(filename));
     write_block(&first_block, location_on_disk, 'd', FALSE);
+
+    // add a second block
+    FAT[location_on_disk] = next_unallocated_block();
+    diskblock_t second_block = virtual_disk[FAT[location_on_disk]];
+    init_block(&second_block);
+    write_block(&second_block, FAT[location_on_disk], 'd', FALSE);
   }
+
   my_file_t *file = malloc(sizeof(my_file_t));
   file->pos = 0;
   file->writing = 0;
@@ -220,16 +227,10 @@ my_file_t *myfopen(char *filename, char *mode)
   file->blockno = location_on_disk;
   file->buffer = first_block;
 
-  // add a second block
-  FAT[location_on_disk] = next_unallocated_block();
-  diskblock_t second_block = virtual_disk[FAT[location_on_disk]];
-  init_block(&second_block);
-  write_block(&second_block, FAT[location_on_disk], 'd', FALSE);
-
   if(strncmp(file->mode, "a", 1) == 0){
     move_pos_to_end(file);
+    file->pos--; //need to set this for when no default content is assigned
   }
-  file->pos--; //need to set this for when no default content is assigned
 
   return file;
 }
@@ -238,12 +239,16 @@ char myfgetc(my_file_t *file)
 {
   int position = file->pos;
   file->pos++;
-  if ((file->buffer.data[position] == '\0') && (FAT[file->blockno] != 0)){
-    printf(" - NEXT BLOCK - ");
-    file->pos = 1;
+  if (((file->pos > 1023) || (file->buffer.data[position] == '\0')) && (FAT[file->blockno] != 0)){
+    printf("\n%d\n", file->pos);
+    file->pos = 0;
     file->blockno = FAT[file->blockno];
     file->buffer = virtual_disk[file->blockno];
-    return file->buffer.data[file->pos - 1];
+    printf("\n%d\n", file->blockno);
+    return file->buffer.data[file->pos];
+  }
+  else if ((file->pos > 1023) && FAT[file->blockno] == 0) {
+    return EOF;
   }
   else {
     return file->buffer.data[position];
@@ -252,37 +257,49 @@ char myfgetc(my_file_t *file)
 
 int myfputc(char character, my_file_t *file)
 {
-  if(strncmp(file->mode, "r", 1) == 0){
-    printf("Write of '%c' Failed: File is 'Read Only'\n", character);
-    return EOF;
-  } else {
-    if (file->pos >= BLOCKSIZE){
-      if(FAT[file->blockno] != 0){
-        file->pos = 0;
-        file->blockno = FAT[file->blockno];
-        file->buffer = virtual_disk[file->blockno];
-      } else {
-        FAT[file->blockno] = next_unallocated_block();
-        diskblock_t new_block = virtual_disk[FAT[file->blockno]];
-        init_block(&new_block);
-        write_block(&new_block, FAT[file->blockno], 'd', FALSE);
-        FAT[FAT[file->blockno]] = 0;
-        copy_fat(FAT);
-      }
+  if (file->pos >= BLOCKSIZE){
+    printf("-%d\n", file->pos);
+    if(FAT[file->blockno] == ENDOFCHAIN) {
+      file->pos = 0;
+      FAT[file->blockno] = next_unallocated_block();
+      file->blockno = FAT[file->blockno];
+      FAT[file->blockno] = 0;
+      copy_fat(FAT);
+
+      diskblock_t new_block;
+      init_block(&new_block);
+
+      write_block(&new_block, file->blockno, 'd', FALSE);
+      file->buffer = virtual_disk[file->blockno];
     }
-
-    file->buffer.data[file->pos] = character;
-    file->pos++;
-    write_block(&file->buffer, file->blockno, 'd', FALSE);
-
-    return 0;
+    else {
+      file->pos = 0;
+      file->blockno = FAT[file->blockno];
+      file->buffer = virtual_disk[file->blockno];
+    }
+    printf("-%d\n", file->pos);
   }
+  else {
+    file->pos++;
+  }
+
+  file->buffer.data[file->pos] = character;
+  write_block(&file->buffer, file->blockno, 'd', FALSE);
+
+  return 0;
 }
 
 int myfclose(my_file_t *file)
 {
   free(file);
   return 0; //unless there's an error?
+}
+
+void move_to_data(my_file_t *file)
+{
+  file->pos = 0;
+  file->blockno = FAT[file->blockno];
+  file->buffer = virtual_disk[file->blockno];
 }
 
 // void save_file()
