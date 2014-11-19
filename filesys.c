@@ -224,12 +224,12 @@ my_file_t *myfopen(char *filename, char *mode)
   FAT[location_on_disk] = next_unallocated_block();
   diskblock_t second_block = virtual_disk[FAT[location_on_disk]];
   init_block(&second_block);
-  memcpy(second_block.data, "content", strlen("content"));
   write_block(&second_block, FAT[location_on_disk], 'd', FALSE);
 
   if(strncmp(file->mode, "a", 1) == 0){
     move_pos_to_end(file);
   }
+  file->pos--; //need to set this for when no default content is assigned
 
   return file;
 }
