@@ -23,17 +23,20 @@ int main() {
 
   print_fat(10);
 
+  FILE *f = fopen("testfileC3_C1_copy.txt", "w");
   my_file_t *test_file2 = myfopen("testfile.txt", "r");
   move_to_data(test_file2);
   while(1){
-    char character = myfgetc(test_file);
+    char character = myfgetc(test_file2);
     if (character == EOF){
       break;
     }
     printf("%c", character);
+    fprintf(f, "%c", character);
   }
   printf("\n");
-
+  fclose(f);
+  myfclose(test_file2);
 
   // Save the changes made to the virtual disk
   write_disk("virtualdisk\0");
