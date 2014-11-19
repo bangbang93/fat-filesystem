@@ -262,10 +262,9 @@ char myfgetc(my_file_t *file)
 
 int myfputc(char character, my_file_t *file)
 {
-  if (file->pos >= BLOCKSIZE){
-    printf("-%d\n", file->pos);
+  if (file->pos == BLOCKSIZE){
+    file->pos = 0;
     if(FAT[file->blockno] == ENDOFCHAIN) {
-      file->pos = 0;
       FAT[file->blockno] = next_unallocated_block();
       file->blockno = FAT[file->blockno];
       FAT[file->blockno] = 0;
@@ -278,18 +277,15 @@ int myfputc(char character, my_file_t *file)
       file->buffer = virtual_disk[file->blockno];
     }
     else {
-      file->pos = 0;
       file->blockno = FAT[file->blockno];
       file->buffer = virtual_disk[file->blockno];
     }
-    printf("-%d\n", file->pos);
-  }
-  else {
-    file->pos++;
   }
 
   file->buffer.data[file->pos] = character;
   write_block(&file->buffer, file->blockno, 'd', FALSE);
+
+  file->pos++;
 
   return 0;
 }
