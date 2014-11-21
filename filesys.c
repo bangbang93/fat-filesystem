@@ -53,6 +53,22 @@ void print_block(int block_index, char type)
     printf("virtualdisk[%d] = \n", block_index);
     printf("is_dir: %d\n", virtual_disk[block_index].dir.is_dir);
     printf("next_entry: %d\n", virtual_disk[block_index].dir.next_entry);
+    // printf("entry_list: %d\n", virtual_disk[block_index].dir.entrylist);
+    for(int i = 0; i < DIRENTRYCOUNT; i++){
+      if(strlen(virtual_disk[block_index].dir.entrylist[i].name) == 0){
+        printf("Empty direntry_t\n");
+      }
+      else {
+        printf("%d\n", i);
+        printf("entrylength: %d\n", virtual_disk[block_index].dir.entrylist[i].entrylength);
+        printf("is_dir: %d\n", virtual_disk[block_index].dir.entrylist[i].is_dir);
+        printf("unused: %d\n", virtual_disk[block_index].dir.entrylist[i].unused);
+        printf("modtime: %ld\n", virtual_disk[block_index].dir.entrylist[i].modtime);
+        printf("file_length: %d\n", virtual_disk[block_index].dir.entrylist[i].file_length);
+        printf("first_block: %d\n", virtual_disk[block_index].dir.entrylist[i].first_block);
+        printf("name: '%s'\n", virtual_disk[block_index].dir.entrylist[i].name);
+      }
+    }
   }
   else {
     printf("Invalid Type");

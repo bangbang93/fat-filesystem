@@ -99,6 +99,7 @@ my_file_t *myfopen(char *filename, char *mode);
 char myfgetc(my_file_t *file);
 int myfputc(char character, my_file_t *file);
 int myfclose(my_file_t *file);
+void print_block(int block_index, char type);
 
 #endif
 
