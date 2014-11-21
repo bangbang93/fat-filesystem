@@ -334,6 +334,32 @@ void move_to_data(my_file_t *file)
   file->buffer = virtual_disk[file->blockno];
 }
 
+void create_file(){
+  //allocate a new block
+  int block_index = next_unallocated_block();
+  FAT[block_index] = 0;
+  diskblock_t block = virtual_disk[block_index];
+
+  //clear it
+  init_block(&block);
+  memcpy(block.data, "content", strlen("content"));
+  write_block(&block, block_index, 'd', FALSE);
+
+  //find a place for it in the directory
+  int next_entry = virtual_disk[current_dir_index].dir.next_entry;
+  diskblock_t file_dir_block = virtual_disk[current_dir_index];
+  direntry_t *file_dir = &file_dir_block.dir.entrylist[next_entry];
+  // this needs to be added to a similar function like next_unallocated_block to create new dir blocks as more files added.
+  file_dir_block.dir.next_entry++;
+
+  //set the properties of the dir entry
+  memcpy(file_dir->name, "hey.txt", strlen("hey.txt"));
+
+  // update the dirblock
+  write_block(&file_dir_block, current_dir_index, 'd', FALSE);
+  // write_block(&file_dir_block, current_dir_index, 'd', FALSE);
+}
+
 // void save_file()
 // {
 //   // read
