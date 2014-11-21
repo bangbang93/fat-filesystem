@@ -39,7 +39,7 @@ typedef short fatentry_t;
 
 typedef struct direntry {
   int         entrylength;   // records length of this entry (can be used with names of variables length)
-  Byte        is_dir;
+  // Byte        is_dir; // apparently this is redundant
   Byte        unused;
   time_t      modtime;
   int         file_length;

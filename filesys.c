@@ -61,7 +61,6 @@ void print_block(int block_index, char type)
       else {
         printf("%d\n", i);
         printf("entrylength: %d\n", virtual_disk[block_index].dir.entrylist[i].entrylength);
-        printf("is_dir: %d\n", virtual_disk[block_index].dir.entrylist[i].is_dir);
         printf("unused: %d\n", virtual_disk[block_index].dir.entrylist[i].unused);
         printf("modtime: %ld\n", virtual_disk[block_index].dir.entrylist[i].modtime);
         printf("file_length: %d\n", virtual_disk[block_index].dir.entrylist[i].file_length);
@@ -163,31 +162,19 @@ void format(char *volume_name)
   }
   copy_fat(FAT);
 
-  //create the root directory
-  direntry_t *root_entry = malloc(sizeof(direntry_t));
-  root_entry->entrylength = 1;
-  root_entry->is_dir = TRUE;
-  root_entry->unused = FALSE;
-  root_entry->file_length = 0;
-  root_entry->first_block = 5;
-  time(&root_entry->modtime);
-  memcpy(root_entry->name, "/", strlen("/"));
-
   //create a block for to store the root directory
   diskblock_t root_block;
   int root_block_index = required_fat_space + 1;
   root_block.dir.is_dir = TRUE;
   root_block.dir.next_entry = 0;
-  root_block.dir.entrylist[0] = *root_entry;
 
   //write this the directory structure to the disk
   write_block(&root_block, root_block_index, 'd', FALSE);
 
-  // update the location of the root dir, the index of the current directories block
-  // and the current directory.
+  // update the location of the root dir
   root_dir_index = root_block_index;
   current_dir_index = root_dir_index;
-  current_dir = root_entry;
+  current_dir = &root_block.dir.entrylist[0];
 }
 
 void init_block(diskblock_t *block)
