@@ -334,6 +334,47 @@ void move_to_data(my_file_t *file)
   file->buffer = virtual_disk[file->blockno];
 }
 
+// given the next entry this will return the next one, moving to a new dir block if needed
+int next_unallocated_dir_entry(){
+  int next_entry = virtual_disk[current_dir_index].dir.next_entry;
+  if(next_entry > DIRENTRYCOUNT - 1){
+    //revert next value
+    virtual_disk[current_dir_index].dir.next_entry = 0;
+
+    int new_dir_block_index = next_unallocated_block();
+    FAT[current_dir_index] = new_dir_block_index;
+    FAT[new_dir_block_index] = ENDOFCHAIN;
+    copy_fat(FAT);
+
+    current_dir_index = new_dir_block_index;
+
+    //create a new dirblock to increase the size of the directory
+    diskblock_t new_dir_block = virtual_disk[new_dir_block_index];
+    new_dir_block.dir.is_dir = TRUE;
+    new_dir_block.dir.next_entry = 0;
+
+    // assign an empty entry for all spaces in the root directory
+    direntry_t *blank_entry = malloc(sizeof(direntry_t));
+    blank_entry->unused = TRUE;
+    blank_entry->file_length = 0;
+    // memcpy(blank_entry->name, "empty", strlen("empty"));
+    for(int i = 0; i < DIRENTRYCOUNT; i ++){
+      new_dir_block.dir.entrylist[i] = *blank_entry;
+    }
+
+    // write this the directory structure to the disk
+    write_block(&new_dir_block, new_dir_block_index, 'd', FALSE);
+
+    // update the location of the root dir
+    root_dir_index = new_dir_block_index;
+    current_dir_index = root_dir_index;
+
+    // set the current dir to a blank entry
+    current_dir = blank_entry;
+  }
+  return virtual_disk[current_dir_index].dir.next_entry++;;
+}
+
 void create_file(){
   //allocate a new block
   int block_index = next_unallocated_block();
@@ -358,6 +399,20 @@ void create_file(){
   // update the dirblock
   write_block(&file_dir_block, current_dir_index, 'd', FALSE);
   // write_block(&file_dir_block, current_dir_index, 'd', FALSE);
+
+  print_fat(10);
+  printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
+  printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
+  printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
+
+  printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
+  printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
+  printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
+
+  printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
+  printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
+  printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
+  print_fat(10);
 }
 
 // void save_file()
