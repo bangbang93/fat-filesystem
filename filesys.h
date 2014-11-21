@@ -100,6 +100,8 @@ char myfgetc(my_file_t *file);
 int myfputc(char character, my_file_t *file);
 int myfclose(my_file_t *file);
 void print_block(int block_index, char type);
+void print_fat(int length);
+void create_file();
 
 #endif
 
