@@ -83,19 +83,12 @@ void print_fat(int length)
 }
 
 // the basic interface to the virtual disk
-void write_block(diskblock_t *block, int block_address, char type, int print)
+void write_block(diskblock_t *block, int block_address, char type)
 {
   if (type == 'd') { //block is data
-    if (print == 1)
-      printf("write block> %d = %s\n", block_address, block->data);
     memmove(virtual_disk[block_address].data, block->data, BLOCKSIZE);
   }
   else if (type == 'f') { // block is fat
-    if (print == 1) {
-      printf("write block> %d = ", block_address);
-      for(int i = 0; i < FATENTRYCOUNT; i++) printf("%d", block->fat[i]);
-      printf("\n");
-    }
     memmove(virtual_disk[block_address].fat, block->fat, BLOCKSIZE);
   }
   else if (type == 'r') { //block is dir, CHECK THIS, dir not working
@@ -134,7 +127,7 @@ void copy_fat(fatentry_t *FAT)
     for(int y = 0; y < (BLOCKSIZE / sizeof(fatentry_t)); y++){
       block.fat[y] = FAT[index++];
     }
-    write_block(&block, x, 'f', FALSE);
+    write_block(&block, x, 'f');
   }
 }
 
@@ -150,7 +143,7 @@ void format(char *volume_name)
   }
 
   memcpy(block.data, volume_name, strlen(volume_name));
-  write_block(&block, 0, 'd', FALSE);
+  write_block(&block, 0, 'd');
 
   FAT[0] = ENDOFCHAIN;
   FAT[1] = 2;
@@ -177,7 +170,7 @@ void format(char *volume_name)
   }
 
   // write this the directory structure to the disk
-  write_block(&root_block, root_block_index, 'd', FALSE);
+  write_block(&root_block, root_block_index, 'd');
 
   // update the location of the root dir
   root_dir_index = root_block_index;
@@ -238,13 +231,13 @@ my_file_t *myfopen(char *filename, char *mode)
     location_on_disk = next_unallocated_block();
     init_block(&first_block);
     memcpy(first_block.data, filename, strlen(filename));
-    write_block(&first_block, location_on_disk, 'd', FALSE);
+    write_block(&first_block, location_on_disk, 'd');
 
     // add a second block
     FAT[location_on_disk] = next_unallocated_block();
     diskblock_t second_block = virtual_disk[FAT[location_on_disk]];
     init_block(&second_block);
-    write_block(&second_block, FAT[location_on_disk], 'd', FALSE);
+    write_block(&second_block, FAT[location_on_disk], 'd');
   }
 
   my_file_t *file = malloc(sizeof(my_file_t));
@@ -294,7 +287,7 @@ int myfputc(char character, my_file_t *file)
       diskblock_t new_block;
       init_block(&new_block);
 
-      write_block(&new_block, file->blockno, 'd', FALSE);
+      write_block(&new_block, file->blockno, 'd');
       file->buffer = virtual_disk[file->blockno];
     }
     else {
@@ -304,7 +297,7 @@ int myfputc(char character, my_file_t *file)
   }
 
   file->buffer.data[file->pos] = character;
-  write_block(&file->buffer, file->blockno, 'd', FALSE);
+  write_block(&file->buffer, file->blockno, 'd');
 
   file->pos++;
 
@@ -346,7 +339,7 @@ int next_unallocated_dir_entry(){
     }
 
     // write this the directory structure to the disk
-    write_block(&new_dir_block, new_dir_block_index, 'd', FALSE);
+    write_block(&new_dir_block, new_dir_block_index, 'd');
 
     // update the location of the root dir
     root_dir_index = new_dir_block_index;
@@ -367,7 +360,7 @@ void create_file(){
   //clear it
   init_block(&block);
   memcpy(block.data, "content", strlen("content"));
-  write_block(&block, block_index, 'd', FALSE);
+  write_block(&block, block_index, 'd');
 
   //find a place for it in the directory
   int next_entry = virtual_disk[current_dir_index].dir.next_entry;
@@ -380,8 +373,8 @@ void create_file(){
   memcpy(file_dir->name, "hey.txt", strlen("hey.txt"));
 
   // update the dirblock
-  write_block(&file_dir_block, current_dir_index, 'd', FALSE);
-  // write_block(&file_dir_block, current_dir_index, 'd', FALSE);
+  write_block(&file_dir_block, current_dir_index, 'd');
+  // write_block(&file_dir_block, current_dir_index, 'd');
 
   print_fat(10);
   printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
