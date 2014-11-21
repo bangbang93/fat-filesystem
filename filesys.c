@@ -59,12 +59,12 @@ void print_block(int block_index, char type)
         printf("Empty direntry_t\n");
       }
       else {
-        printf("%d\n", i);
-        printf("entrylength: %d\n", virtual_disk[block_index].dir.entrylist[i].entrylength);
-        printf("unused: %d\n", virtual_disk[block_index].dir.entrylist[i].unused);
-        printf("modtime: %ld\n", virtual_disk[block_index].dir.entrylist[i].modtime);
-        printf("file_length: %d\n", virtual_disk[block_index].dir.entrylist[i].file_length);
-        printf("first_block: %d\n", virtual_disk[block_index].dir.entrylist[i].first_block);
+        printf("%d: ", i);
+        printf("entrylength: %d, ", virtual_disk[block_index].dir.entrylist[i].entrylength);
+        printf("unused: %d, ", virtual_disk[block_index].dir.entrylist[i].unused);
+        printf("modtime: %ld, ", virtual_disk[block_index].dir.entrylist[i].modtime);
+        printf("file_length: %d, ", virtual_disk[block_index].dir.entrylist[i].file_length);
+        printf("first_block: %d, ", virtual_disk[block_index].dir.entrylist[i].first_block);
         printf("name: '%s'\n", virtual_disk[block_index].dir.entrylist[i].name);
       }
     }
