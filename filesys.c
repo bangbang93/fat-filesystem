@@ -250,6 +250,7 @@ char myfgetc(my_file_t *file)
     file->buffer = virtual_disk[file->blockno];
     return file->buffer.data[file->pos - 1];
   }
+  //  fix these values to MAXBLOCKSIZE and ENDOFCHAIN
   else if ((file->pos > 1024) && FAT[file->blockno] == 0) {
     return EOF;
   }
