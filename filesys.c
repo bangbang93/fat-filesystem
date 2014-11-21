@@ -99,9 +99,9 @@ void write_block(diskblock_t *block, int block_address, char type, int print)
     }
     memmove(virtual_disk[block_address].fat, block->fat, BLOCKSIZE);
   }
-  // else if (type == 'r') { //block if dir
-  //   memmove(virtual_disk[block_address].dir, block->dir, BLOCKSIZE);
-  // }
+  else if (type == 'r') { //block is dir, CHECK THIS, dir not working
+    memmove(virtual_disk[block_address].data, block->data, BLOCKSIZE);
+  }
   else {
     printf("Invalid Type");
   }
