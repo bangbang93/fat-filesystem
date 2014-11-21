@@ -82,8 +82,7 @@ void print_fat(int length)
   printf("\n");
 }
 
-/*the basic interface to the virtual disk
- *this moves memory around */
+// the basic interface to the virtual disk
 void write_block(diskblock_t *block, int block_address, char type, int print)
 {
   if (type == 'd') { //block is data
@@ -207,15 +206,6 @@ int next_unallocated_block()
   return -1; //disk is full
 }
 
-int last_block_in_file(my_file_t *file)
-{
-  int next_block = file->blockno;
-  while (FAT[next_block] != 0) {
-    next_block = FAT[next_block];
-  }
-  return next_block;
-}
-
 int file_index(char *filename){
   for(int i = 0; i < MAXBLOCKS; i++){
     if (memcmp(virtual_disk[i].data, filename, strlen(filename) + 1) == 0){
@@ -327,13 +317,6 @@ int myfclose(my_file_t *file)
   return 0; //unless there's an error?
 }
 
-void move_to_data(my_file_t *file)
-{
-  file->pos = 0;
-  file->blockno = FAT[file->blockno];
-  file->buffer = virtual_disk[file->blockno];
-}
-
 // given the next entry this will return the next one, moving to a new dir block if needed
 int next_unallocated_dir_entry(){
   int next_entry = virtual_disk[current_dir_index].dir.next_entry;
@@ -414,38 +397,3 @@ void create_file(){
   printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
   print_fat(10);
 }
-
-// void save_file()
-// {
-//   // read
-//   my_file_t *read_file = myfopen("read.txt", "r");
-//   char c;
-//   do {
-//     c = myfgetc(read_file);
-//     if( c == '\0' )
-//     {
-//       break;
-//     }
-//     printf("%c", c);
-//   } while(1);
-//   printf("\n");
-
-//   //write
-//   my_file_t *write_file = myfopen("write.txt", "w");
-//   myfputc('1', write_file);
-//   myfputc('2', write_file);
-//   printf("\n");
-
-//   //append
-//   my_file_t *append_file = myfopen("append.txt", "a");
-//   myfputc('1', append_file);
-//   myfputc('2', append_file);
-//   printf("\n");
-
-//   // close file
-//   myfclose(read_file);
-//   myfclose(write_file);
-//   myfclose(append_file);
-
-//   printf("\n");
-// }
