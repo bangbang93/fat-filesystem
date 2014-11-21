@@ -168,13 +168,24 @@ void format(char *volume_name)
   root_block.dir.is_dir = TRUE;
   root_block.dir.next_entry = 0;
 
-  //write this the directory structure to the disk
+  // assign an empty entry for all spaces in the root directory
+  direntry_t *blank_entry = malloc(sizeof(direntry_t));
+  blank_entry->unused = TRUE;
+  blank_entry->file_length = 0;
+  // memcpy(blank_entry->name, "empty", strlen("empty"));
+  for(int i = 0; i < DIRENTRYCOUNT; i ++){
+    root_block.dir.entrylist[i] = *blank_entry;
+  }
+
+  // write this the directory structure to the disk
   write_block(&root_block, root_block_index, 'd', FALSE);
 
   // update the location of the root dir
   root_dir_index = root_block_index;
   current_dir_index = root_dir_index;
-  current_dir = &root_block.dir.entrylist[0];
+
+  // set the current dir to a blank entry
+  current_dir = blank_entry;
 }
 
 void init_block(diskblock_t *block)
