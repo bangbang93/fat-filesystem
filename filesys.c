@@ -421,6 +421,9 @@ void create_file(){
 
   //set the properties of the dir entry
   memcpy(file_dir->name, "file.txt", strlen("file.txt"));
+  file_dir->is_dir = FALSE;
+  file_dir->unused = FALSE;
+  file_dir->first_block = block_index;
 
   // update the dirblock
   write_block(&file_dir_block, current_dir_index, 'd');
@@ -446,6 +449,7 @@ void create_file(){
   memcpy(sub_dir_dir->name, "directory", strlen("a new directory"));
   sub_dir_dir->first_block = sub_dir_block_index;
   sub_dir_dir->is_dir = TRUE;
+  sub_dir_dir->unused = FALSE;
 
   // update the dirblock
   write_block(&sub_dir_dir_block, current_dir_index, 'd');
