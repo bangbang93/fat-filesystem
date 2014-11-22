@@ -215,11 +215,51 @@ int next_unallocated_block()
   return -1; //disk is full
 }
 
-int file_index(char *filename){
-  for(int i = 0; i < MAXBLOCKS; i++){
-    if (memcmp(virtual_disk[i].data, filename, strlen(filename) + 1) == 0){
-      return i;
+// given the next entry this will return the next one, moving to a new dir block if needed
+int next_unallocated_dir_entry(){
+  int next_entry = virtual_disk[current_dir_index].dir.next_entry;
+  if(next_entry > DIRENTRYCOUNT - 1){
+    //revert next value
+    virtual_disk[current_dir_index].dir.next_entry = 0;
+
+    int new_dir_block_index = next_unallocated_block();
+    FAT[current_dir_index] = new_dir_block_index;
+    FAT[new_dir_block_index] = ENDOFCHAIN;
+    copy_fat(FAT);
+
+    current_dir_index = new_dir_block_index;
+
+    //create a new dirblock to increase the size of the directory
+    diskblock_t new_dir_block = virtual_disk[new_dir_block_index];
+    new_dir_block.dir.is_dir = TRUE;
+    new_dir_block.dir.next_entry = 0;
+
+    // assign an empty entry for all spaces in the root directory
+    direntry_t *blank_entry = malloc(sizeof(direntry_t));
+    blank_entry->unused = TRUE;
+    blank_entry->file_length = 0;
+    // memcpy(blank_entry->name, "empty", strlen("empty"));
+    for(int i = 0; i < DIRENTRYCOUNT; i ++){
+      new_dir_block.dir.entrylist[i] = *blank_entry;
     }
+
+    // write this the directory structure to the disk
+    write_block(&new_dir_block, new_dir_block_index, 'd');
+
+    // update the location of the root dir
+    // root_dir_index = new_dir_block_index;
+    current_dir_index = new_dir_block_index;
+
+    // set the current dir to a blank entry
+    current_dir = blank_entry;
+  }
+  return virtual_disk[current_dir_index].dir.next_entry++;;
+}
+
+int file_entry_index(char *filename){
+  for(int i = 0; i < DIRENTRYCOUNT; i++){
+    if (memcmp(virtual_disk[current_dir_index].dir.entrylist[i].name, filename, strlen(filename) + 1) == 0)
+      return i;
   }
   return -1;
 }
@@ -238,31 +278,73 @@ void move_pos_to_end(my_file_t *file){
   }
 }
 
+int add_block_to_directory(int index, char *name, int is_dir) {
+  //find a place for it in the directory
+  int entry_index = next_unallocated_dir_entry();
+
+  // find the block of the current directory
+  diskblock_t file_dir_block = virtual_disk[current_dir_index];
+
+  // get the direntry for where the file is going to be stored
+  direntry_t *file_dir = &file_dir_block.dir.entrylist[entry_index];
+
+  //set the properties of the dir entry
+  memcpy(file_dir->name, name, strlen(name));
+  file_dir->is_dir = is_dir;
+  file_dir->unused = FALSE;
+  file_dir->first_block = index;
+
+  // save the dirblock to the disk
+  write_block(&file_dir_block, current_dir_index, 'd');
+
+  return entry_index;
+}
+
+diskblock_t create_block(int index, int type) {
+  // load the space to be used from the disk
+  diskblock_t block = virtual_disk[index];
+
+  //clear it
+  if(type == DIR) init_dir_block(&block);
+  if(type == DATA) init_block(&block);
+  // // give it some data
+  // memcpy(block.data, "data", strlen("data"));
+
+  //save the block to the disk
+  write_block(&block, index, 'd'); //writing as data seems to work even for dir
+
+  return block;
+}
+
 my_file_t *myfopen(char *filename, char *mode)
 {
-  int location_on_disk = file_index(filename);
-  diskblock_t first_block = virtual_disk[location_on_disk]; //should this be malloc?
-  if(location_on_disk == -1){
-    printf("File did not exist. Creating new file: %s\n", filename);
-    location_on_disk = next_unallocated_block();
-    init_block(&first_block);
-    memcpy(first_block.data, filename, strlen(filename));
-    write_block(&first_block, location_on_disk, 'd');
+  // find the file in the current directory
+  int dir_entry_index = file_entry_index(filename);
 
-    // add a second block
-    FAT[location_on_disk] = next_unallocated_block();
-    diskblock_t second_block = virtual_disk[FAT[location_on_disk]];
-    init_block(&second_block);
-    write_block(&second_block, FAT[location_on_disk], 'd');
+  // if it doesn't exist then create it
+  if(dir_entry_index == -1){
+    printf("File did not exist. Creating new file: %s\n", filename);
+
+    // create a block for it on the disk
+    int block_index = next_unallocated_block();
+    create_block(block_index, DATA);
+
+    // create a dir entry for it in the current directory
+    dir_entry_index = add_block_to_directory(block_index, filename, FALSE);
   }
 
+  // load up it's dir entry
+  direntry_t dir_entry = virtual_disk[current_dir_index].dir.entrylist[dir_entry_index];
+
+  // create a file object to return
   my_file_t *file = malloc(sizeof(my_file_t));
   file->pos = 0;
   file->writing = 0;
   memcpy(file->mode, mode, strlen(mode));
-  file->blockno = location_on_disk;
-  file->buffer = first_block;
+  file->blockno = dir_entry.first_block;
+  file->buffer = virtual_disk[dir_entry.first_block];
 
+  // move to the end if in append mode
   if(strncmp(file->mode, "a", 1) == 0){
     move_pos_to_end(file);
     file->pos--; //need to set this for when no default content is assigned
@@ -326,47 +408,6 @@ int myfclose(my_file_t *file)
   return 0; //unless there's an error?
 }
 
-// given the next entry this will return the next one, moving to a new dir block if needed
-int next_unallocated_dir_entry(){
-  int next_entry = virtual_disk[current_dir_index].dir.next_entry;
-  if(next_entry > DIRENTRYCOUNT - 1){
-    //revert next value
-    virtual_disk[current_dir_index].dir.next_entry = 0;
-
-    int new_dir_block_index = next_unallocated_block();
-    FAT[current_dir_index] = new_dir_block_index;
-    FAT[new_dir_block_index] = ENDOFCHAIN;
-    copy_fat(FAT);
-
-    current_dir_index = new_dir_block_index;
-
-    //create a new dirblock to increase the size of the directory
-    diskblock_t new_dir_block = virtual_disk[new_dir_block_index];
-    new_dir_block.dir.is_dir = TRUE;
-    new_dir_block.dir.next_entry = 0;
-
-    // assign an empty entry for all spaces in the root directory
-    direntry_t *blank_entry = malloc(sizeof(direntry_t));
-    blank_entry->unused = TRUE;
-    blank_entry->file_length = 0;
-    // memcpy(blank_entry->name, "empty", strlen("empty"));
-    for(int i = 0; i < DIRENTRYCOUNT; i ++){
-      new_dir_block.dir.entrylist[i] = *blank_entry;
-    }
-
-    // write this the directory structure to the disk
-    write_block(&new_dir_block, new_dir_block_index, 'd');
-
-    // update the location of the root dir
-    // root_dir_index = new_dir_block_index;
-    current_dir_index = new_dir_block_index;
-
-    // set the current dir to a blank entry
-    current_dir = blank_entry;
-  }
-  return virtual_disk[current_dir_index].dir.next_entry++;;
-}
-
 void print_directory_structure(int current_dir_block, int indent){
   char string[] = "\0\0\0\0\0\0"; //up to five levels
   int x;
@@ -399,44 +440,6 @@ void print_directory_structure(int current_dir_block, int indent){
     if(FAT[current_dir_block] == 0) break;
     current_dir_block = FAT[current_dir_block];
   }
-}
-
-
-
-void add_block_to_directory(int index, char *name, int is_dir) {
-  //find a place for it in the directory
-  int entry_index = next_unallocated_dir_entry();
-
-  // find the block of the current directory
-  diskblock_t file_dir_block = virtual_disk[current_dir_index];
-
-  // get the direntry for where the file is going to be stored
-  direntry_t *file_dir = &file_dir_block.dir.entrylist[entry_index];
-
-  //set the properties of the dir entry
-  memcpy(file_dir->name, name, strlen(name));
-  file_dir->is_dir = is_dir;
-  file_dir->unused = FALSE;
-  file_dir->first_block = index;
-
-  // save the dirblock to the disk
-  write_block(&file_dir_block, current_dir_index, 'd');
-}
-
-diskblock_t create_block(int index, int type) {
-  // load the space to be used from the disk
-  diskblock_t block = virtual_disk[index];
-
-  //clear it
-  if(type == DIR) init_dir_block(&block);
-  if(type == DATA) init_block(&block);
-  // // give it some data
-  // memcpy(block.data, "data", strlen("data"));
-
-  //save the block to the disk
-  write_block(&block, index, 'd'); //writing as data seems to work even for dir
-
-  return block;
 }
 
 void create_file(){
