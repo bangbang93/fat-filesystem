@@ -343,13 +343,40 @@ int next_unallocated_dir_entry(){
     write_block(&new_dir_block, new_dir_block_index, 'd');
 
     // update the location of the root dir
-    root_dir_index = new_dir_block_index;
-    current_dir_index = root_dir_index;
+    // root_dir_index = new_dir_block_index;
+    current_dir_index = new_dir_block_index;
 
     // set the current dir to a blank entry
     current_dir = blank_entry;
   }
   return virtual_disk[current_dir_index].dir.next_entry++;;
+}
+
+void print_directory_structure(){
+  printf("\n--------\n");
+  int current_dir_block = root_dir_index;
+  while(1){
+    // print_block(current_dir_block, 'r');
+    for(int i = 0; i < DIRENTRYCOUNT; i++){
+      printf("%d: ", i);
+      if(strlen(virtual_disk[current_dir_block].dir.entrylist[i].name) == 0){
+        printf("empty\n");
+      }
+      else {
+        printf("name: '%s', ", virtual_disk[current_dir_block].dir.entrylist[i].name);
+        printf("first_block: %d, ", virtual_disk[current_dir_block].dir.entrylist[i].first_block);
+        printf("id_dir: %d, ", virtual_disk[current_dir_block].dir.entrylist[i].is_dir);
+        printf("unused: %d, ", virtual_disk[current_dir_block].dir.entrylist[i].unused);
+        printf("modtime: %ld, ", virtual_disk[current_dir_block].dir.entrylist[i].modtime);
+        printf("file_length: %d, ", virtual_disk[current_dir_block].dir.entrylist[i].file_length);
+        printf("entrylength: %d\n", virtual_disk[current_dir_block].dir.entrylist[i].entrylength);
+      }
+    }
+
+    if(FAT[current_dir_block] == 0) break;
+    current_dir_block = FAT[current_dir_block];
+  }
+  printf("\n--------\n");
 }
 
 void create_file(){
@@ -385,9 +412,6 @@ void create_file(){
   printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
   printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
   printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
-
-  printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
-  printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
-  printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
   print_fat(10);
+  print_directory_structure();
 }
