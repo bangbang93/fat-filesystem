@@ -106,6 +106,7 @@ int myfclose(my_file_t *file);
 void print_block(int block_index, char type);
 void print_fat(int length);
 void create_file();
+void print_directory_structure(int current_dir_block, int indent);
 
 #endif
 
