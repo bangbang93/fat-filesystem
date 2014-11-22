@@ -368,7 +368,7 @@ int next_unallocated_dir_entry(){
 }
 
 void print_directory_structure(int current_dir_block, int indent){
-  char string[10]; //up to ten levels
+  char string[] = "\0\0\0\0\0\0"; //up to five levels
   int x;
   for(x = 0; x < indent; x++){
     string[x] = '\t';
