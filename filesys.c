@@ -401,110 +401,57 @@ void print_directory_structure(int current_dir_block, int indent){
   }
 }
 
-void create_file(){
-  //allocate a new block
-  int block_index = next_unallocated_block();
-  FAT[block_index] = 0;
-  diskblock_t block = virtual_disk[block_index];
 
-  //clear it
-  init_block(&block);
-  memcpy(block.data, "content", strlen("content"));
-  write_block(&block, block_index, 'd');
 
+void add_block_to_directory(int index, char *name, int is_dir) {
   //find a place for it in the directory
-  int next_entry = virtual_disk[current_dir_index].dir.next_entry;
+  int entry_index = next_unallocated_dir_entry();
+
+  // find the block of the current directory
   diskblock_t file_dir_block = virtual_disk[current_dir_index];
-  direntry_t *file_dir = &file_dir_block.dir.entrylist[next_entry];
+
+  // get the direntry for where the file is going to be stored
+  direntry_t *file_dir = &file_dir_block.dir.entrylist[entry_index];
 
   //set the properties of the dir entry
-  memcpy(file_dir->name, "file.txt", strlen("file.txt"));
-  file_dir->is_dir = FALSE;
+  memcpy(file_dir->name, name, strlen(name));
+  file_dir->is_dir = is_dir;
   file_dir->unused = FALSE;
-  file_dir->first_block = block_index;
+  file_dir->first_block = index;
 
-  // update the dirblock
+  // save the dirblock to the disk
   write_block(&file_dir_block, current_dir_index, 'd');
-  // write_block(&file_dir_block, current_dir_index, 'd');
+}
+
+diskblock_t create_block(int index, int type) {
+  // load the space to be used from the disk
+  diskblock_t block = virtual_disk[index];
+
+  //clear it
+  if(type == DIR) init_dir_block(&block);
+  if(type == DATA) init_block(&block);
+  // // give it some data
+  // memcpy(block.data, "data", strlen("data"));
+
+  //save the block to the disk
+  write_block(&block, index, 'd'); //writing as data seems to work even for dir
+
+  return block;
+}
+
+void create_file(){
+  // create a new block for the file
+  int block_index = next_unallocated_block();
+  create_block(block_index, DATA);
+  add_block_to_directory(block_index, "file.txt", FALSE);
 
   //allocate a new block for the subdir
   int sub_dir_block_index = next_unallocated_block();
-  FAT[sub_dir_block_index] = 0;
-  diskblock_t sub_dir_block = virtual_disk[sub_dir_block_index];
+  create_block(sub_dir_block_index, DIR);
+  add_block_to_directory(sub_dir_block_index, "directory", TRUE);
 
-  //clear it
-  init_dir_block(&sub_dir_block);
-  write_block(&sub_dir_block, sub_dir_block_index, 'd');
-
-  //find a place for it in the directory
-  next_entry = next_unallocated_dir_entry();
-  diskblock_t sub_dir_dir_block = virtual_disk[current_dir_index];
-  direntry_t *sub_dir_dir = &sub_dir_dir_block.dir.entrylist[next_entry];
-
-  //set the properties of the dir entry
-  memcpy(sub_dir_dir->name, "directory", strlen("a new directory"));
-  sub_dir_dir->first_block = sub_dir_block_index;
-  sub_dir_dir->is_dir = TRUE;
-  sub_dir_dir->unused = FALSE;
-
-  // update the dirblock
-  write_block(&sub_dir_dir_block, current_dir_index, 'd');
-
-///////////////////////////////
-
+  // 'cd' to the new sub dir
   current_dir_index = sub_dir_block_index;
-
-  //allocate a new block
-  block_index = next_unallocated_block();
-  FAT[block_index] = 0;
-  block = virtual_disk[block_index];
-
-  //clear it
-  init_block(&block);
-  memcpy(block.data, "content", strlen("content"));
-  write_block(&block, block_index, 'd');
-
-  //find a place for it in the directory
-  next_entry = virtual_disk[current_dir_index].dir.next_entry;
-  file_dir_block = virtual_disk[current_dir_index];
-  file_dir = &file_dir_block.dir.entrylist[next_entry];
-
-  //set the properties of the dir entry
-  memcpy(file_dir->name, "file.txt", strlen("file.txt"));
-  file_dir->is_dir = FALSE;
-  file_dir->unused = FALSE;
-  file_dir->first_block = block_index;
-
-  // update the dirblock
-  write_block(&file_dir_block, current_dir_index, 'd');
-  // write_block(&file_dir_block, current_dir_index, 'd');
-
-
-  //////// adding a sub sub dir
-  //allocate a new block for the subdir
-  sub_dir_block_index = next_unallocated_block();
-  FAT[sub_dir_block_index] = 0;
-  sub_dir_block = virtual_disk[sub_dir_block_index];
-
-  //clear it
-  init_dir_block(&sub_dir_block);
-  write_block(&sub_dir_block, sub_dir_block_index, 'd');
-
-  //find a place for it in the directory
-  next_entry = next_unallocated_dir_entry();
-  sub_dir_dir_block = virtual_disk[current_dir_index];
-  sub_dir_dir = &sub_dir_dir_block.dir.entrylist[next_entry];
-  // // this needs to be added to a similar function like next_unallocated_block to create new dir blocks as more files added.
-  // // sub_dir_dir_block.dir.next_entry++;
-
-  // //set the properties of the dir entry
-  memcpy(sub_dir_dir->name, "directory", strlen("a new directory"));
-  sub_dir_dir->first_block = sub_dir_block_index;
-  sub_dir_dir->is_dir = TRUE;
-  sub_dir_dir->unused = FALSE;
-
-  // // update the dirblock
-  write_block(&sub_dir_dir_block, current_dir_index, 'r');
 
   print_directory_structure(root_dir_index, 0);
 }
