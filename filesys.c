@@ -416,8 +416,6 @@ void create_file(){
   int next_entry = virtual_disk[current_dir_index].dir.next_entry;
   diskblock_t file_dir_block = virtual_disk[current_dir_index];
   direntry_t *file_dir = &file_dir_block.dir.entrylist[next_entry];
-  // this needs to be added to a similar function like next_unallocated_block to create new dir blocks as more files added.
-  file_dir_block.dir.next_entry++;
 
   //set the properties of the dir entry
   memcpy(file_dir->name, "file.txt", strlen("file.txt"));
@@ -442,8 +440,6 @@ void create_file(){
   next_entry = next_unallocated_dir_entry();
   diskblock_t sub_dir_dir_block = virtual_disk[current_dir_index];
   direntry_t *sub_dir_dir = &sub_dir_dir_block.dir.entrylist[next_entry];
-  // this needs to be added to a similar function like next_unallocated_block to create new dir blocks as more files added.
-  sub_dir_dir_block.dir.next_entry++;
 
   //set the properties of the dir entry
   memcpy(sub_dir_dir->name, "directory", strlen("a new directory"));
