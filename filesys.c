@@ -61,6 +61,7 @@ void print_block(int block_index, char type)
       else {
         printf("%d: ", i);
         printf("entrylength: %d, ", virtual_disk[block_index].dir.entrylist[i].entrylength);
+        printf("id_dir: %d, ", virtual_disk[block_index].dir.entrylist[i].is_dir);
         printf("unused: %d, ", virtual_disk[block_index].dir.entrylist[i].unused);
         printf("modtime: %ld, ", virtual_disk[block_index].dir.entrylist[i].modtime);
         printf("file_length: %d, ", virtual_disk[block_index].dir.entrylist[i].file_length);
