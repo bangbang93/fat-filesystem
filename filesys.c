@@ -188,6 +188,20 @@ void init_block(diskblock_t *block)
   }
 }
 
+void init_dir_block(diskblock_t *block){
+  block->dir.is_dir = TRUE;
+  block->dir.next_entry = 0;
+
+  // assign an empty entry for all spaces in the root directory
+  direntry_t *blank_entry = malloc(sizeof(direntry_t));
+  blank_entry->unused = TRUE;
+  blank_entry->file_length = 0;
+  // memcpy(blank_entry->name, "empty", strlen("empty"));
+  for(int i = 0; i < DIRENTRYCOUNT; i ++){
+    block->dir.entrylist[i] = *blank_entry;
+  }
+}
+
 int next_unallocated_block()
 {
   for(int i = 0; i < MAXBLOCKS; i++){
