@@ -267,8 +267,8 @@ int file_entry_index(char *filename){
 void move_pos_to_end(my_file_t *file){
   //last block
   while(1) {
-    file->blockno = FAT[file->blockno];
     if(FAT[file->blockno] == 0) break;
+    file->blockno = FAT[file->blockno];
   }
 
   // last character
@@ -276,6 +276,9 @@ void move_pos_to_end(my_file_t *file){
   while(1) {
     if(file->buffer.data[file->pos+++1] == '\0') break;
   }
+
+  // if there is no content it needs to be set back to zero
+  if (file->buffer.data[0] == '\0') file->pos = 0;
 }
 
 int add_block_to_directory(int index, char *name, int is_dir) {
@@ -347,7 +350,6 @@ my_file_t *myfopen(char *filename, char *mode)
   // move to the end if in append mode
   if(strncmp(file->mode, "a", 1) == 0){
     move_pos_to_end(file);
-    file->pos--; //need to set this for when no default content is assigned
   }
 
   return file;
