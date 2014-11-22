@@ -4,49 +4,49 @@
 #include <string.h>
 #include <stdlib.h>
 
-int main() {
-  //CGS D3-D1
+void cgs_d(){
   format("CS3026 Operating Systems Assessment 2014\0");
+}
 
-  // CGS C3-C1
-  my_file_t *test_file = myfopen("test_file.txt", "a");
+void cgs_c(){
+  // create a new file in write mode
+  my_file_t *test_file = myfopen("test_file.txt", "w");
 
-  // create_file();
-  print_fat(10);
-  print_directory_structure(3, 0);
+  // the contents of this string are used when assigning random data to the file
+  char string[] = "4096bytes"; //string used for filling the file with data
 
-  // print_block(0, 'd');
-  // print_block(1, 'f');
-  // print_block(2, 'f');
-  // print_block(3, 'r');
+  // fill a 4kb file
+  for (int i = 0; i < 4 * BLOCKSIZE; i++){
+    // myfputc(string[rand() % (int) (sizeof string - 1)], test_file); //use for random data
+    myfputc('0', test_file);
+  }
 
-  // char string[] = "4096bytes"; //string used for filling the file with data
+  myfclose(test_file);
 
-  // print_fat(10);
+  // use the real fopen to write the output to a text file
+  FILE *f = fopen("testfileC3_C1_copy.txt", "w");
 
-  // for (int i = 0; i < 4 * BLOCKSIZE; i++){
-  //   // myfputc(string[rand() % (int) (sizeof string - 1)], test_file); //use for random data
-  //   myfputc('0', test_file);
-  // }
+  // open our test_file in read mode
+  my_file_t *test_file2 = myfopen("test_file.txt", "r");
 
-  // myfclose(test_file);
-
-  // print_fat(10);
-
-  // FILE *f = fopen("testfileC3_C1_copy.txt", "w");
-  // my_file_t *test_file2 = myfopen("testfile.txt", "r");
-  // move_to_data(test_file2);
-  // while(1){
-  //   char character = myfgetc(test_file2);
-  //   if (character == EOF){
-  //     break;
-  //   }
-  //   printf("%c", character);
-  //   fprintf(f, "%c", character);
-  // }
+  // loop over it until it hits EOF
+  while(1){
+    char character = myfgetc(test_file2);
+    if (character == EOF){
+      break;
+    }
+    // print it to the console and write it in the real file
+    // printf("%c", character);
+    fprintf(f, "%c", character);
+  }
   // printf("\n");
-  // fclose(f);
-  // myfclose(test_file2);
+  fclose(f);
+  myfclose(test_file2);
+}
+
+int main() {
+  cgs_d();
+  cgs_c();
 
   // Save the changes made to the virtual disk
   write_disk("virtualdisk\0");
