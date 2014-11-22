@@ -28,6 +28,10 @@
 #define ENDOFCHAIN 0
 #define EOF -1
 
+#define DATA 0
+// #define FAT 1
+#define DIR 2
+
 typedef unsigned char Byte;
 
 // create a type fatentry_t, we set this currently to short (16-bit)
