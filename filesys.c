@@ -55,6 +55,7 @@ void print_block(int block_index, char type)
     printf("next_entry: %d\n", virtual_disk[block_index].dir.next_entry);
     // printf("entry_list: %d\n", virtual_disk[block_index].dir.entrylist);
     for(int i = 0; i < DIRENTRYCOUNT; i++){
+      //this should be 'unused' rather than 'name'
       if(strlen(virtual_disk[block_index].dir.entrylist[i].name) == 0){
         printf("Empty direntry_t\n");
       }
@@ -366,12 +367,16 @@ int next_unallocated_dir_entry(){
   return virtual_disk[current_dir_index].dir.next_entry++;;
 }
 
-void print_directory_structure(){
-  printf("\n--------\n");
-  int current_dir_block = root_dir_index;
+void print_directory_structure(int current_dir_block, int indent){
+  char string[10]; //up to ten levels
+  int x;
+  for(x = 0; x < indent; x++){
+    string[x] = '\t';
+  }
+
   while(1){
-    // print_block(current_dir_block, 'r');
     for(int i = 0; i < DIRENTRYCOUNT; i++){
+      printf("%s", string);
       printf("%d: ", i);
       if(strlen(virtual_disk[current_dir_block].dir.entrylist[i].name) == 0){
         printf("empty\n");
@@ -379,18 +384,21 @@ void print_directory_structure(){
       else {
         printf("name: '%s', ", virtual_disk[current_dir_block].dir.entrylist[i].name);
         printf("first_block: %d, ", virtual_disk[current_dir_block].dir.entrylist[i].first_block);
-        printf("id_dir: %d, ", virtual_disk[current_dir_block].dir.entrylist[i].is_dir);
+        printf("is_dir: %d, ", virtual_disk[current_dir_block].dir.entrylist[i].is_dir);
         printf("unused: %d, ", virtual_disk[current_dir_block].dir.entrylist[i].unused);
         printf("modtime: %ld, ", virtual_disk[current_dir_block].dir.entrylist[i].modtime);
         printf("file_length: %d, ", virtual_disk[current_dir_block].dir.entrylist[i].file_length);
         printf("entrylength: %d\n", virtual_disk[current_dir_block].dir.entrylist[i].entrylength);
+
+        if (virtual_disk[current_dir_block].dir.entrylist[i].is_dir == 1){
+          print_directory_structure(virtual_disk[current_dir_block].dir.entrylist[i].first_block, indent + 1);
+        }
       }
     }
 
     if(FAT[current_dir_block] == 0) break;
     current_dir_block = FAT[current_dir_block];
   }
-  printf("\n--------\n");
 }
 
 void create_file(){
@@ -412,20 +420,35 @@ void create_file(){
   file_dir_block.dir.next_entry++;
 
   //set the properties of the dir entry
-  memcpy(file_dir->name, "hey.txt", strlen("hey.txt"));
+  memcpy(file_dir->name, "file.txt", strlen("file.txt"));
 
   // update the dirblock
   write_block(&file_dir_block, current_dir_index, 'd');
   // write_block(&file_dir_block, current_dir_index, 'd');
 
-  print_fat(10);
-  printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
-  printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
-  printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
+  //allocate a new block for the subdir
+  int sub_dir_block_index = next_unallocated_block();
+  FAT[sub_dir_block_index] = 0;
+  diskblock_t sub_dir_block = virtual_disk[sub_dir_block_index];
 
-  printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
-  printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
-  printf("%d, %d\n", next_unallocated_dir_entry(), current_dir_index);
-  print_fat(10);
-  print_directory_structure();
+  //clear it
+  init_dir_block(&sub_dir_block);
+  write_block(&sub_dir_block, sub_dir_block_index, 'd');
+
+  //find a place for it in the directory
+  next_entry = next_unallocated_dir_entry();
+  diskblock_t sub_dir_dir_block = virtual_disk[current_dir_index];
+  direntry_t *sub_dir_dir = &sub_dir_dir_block.dir.entrylist[next_entry];
+  // this needs to be added to a similar function like next_unallocated_block to create new dir blocks as more files added.
+  sub_dir_dir_block.dir.next_entry++;
+
+  //set the properties of the dir entry
+  memcpy(sub_dir_dir->name, "directory", strlen("a new directory"));
+  sub_dir_dir->first_block = sub_dir_block_index;
+  sub_dir_dir->is_dir = TRUE;
+
+  // update the dirblock
+  write_block(&sub_dir_dir_block, current_dir_index, 'd');
+
+  print_directory_structure(root_dir_index, 0);
 }
