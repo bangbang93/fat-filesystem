@@ -442,7 +442,7 @@ void print_directory_structure(int current_dir_block, int indent){
   }
 }
 
-void create_file(){
+void manually_create_file_and_directory(){
   // create a new block for the file
   int block_index = next_unallocated_block();
   create_block(block_index, DATA);
