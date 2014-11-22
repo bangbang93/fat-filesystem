@@ -450,5 +450,61 @@ void create_file(){
   // update the dirblock
   write_block(&sub_dir_dir_block, current_dir_index, 'd');
 
+///////////////////////////////
+
+  current_dir_index = sub_dir_block_index;
+
+  //allocate a new block
+  block_index = next_unallocated_block();
+  FAT[block_index] = 0;
+  block = virtual_disk[block_index];
+
+  //clear it
+  init_block(&block);
+  memcpy(block.data, "content", strlen("content"));
+  write_block(&block, block_index, 'd');
+
+  //find a place for it in the directory
+  next_entry = virtual_disk[current_dir_index].dir.next_entry;
+  file_dir_block = virtual_disk[current_dir_index];
+  file_dir = &file_dir_block.dir.entrylist[next_entry];
+
+  //set the properties of the dir entry
+  memcpy(file_dir->name, "file.txt", strlen("file.txt"));
+  file_dir->is_dir = FALSE;
+  file_dir->unused = FALSE;
+  file_dir->first_block = block_index;
+
+  // update the dirblock
+  write_block(&file_dir_block, current_dir_index, 'd');
+  // write_block(&file_dir_block, current_dir_index, 'd');
+
+
+  //////// adding a sub sub dir
+  //allocate a new block for the subdir
+  sub_dir_block_index = next_unallocated_block();
+  FAT[sub_dir_block_index] = 0;
+  sub_dir_block = virtual_disk[sub_dir_block_index];
+
+  //clear it
+  init_dir_block(&sub_dir_block);
+  write_block(&sub_dir_block, sub_dir_block_index, 'd');
+
+  //find a place for it in the directory
+  next_entry = next_unallocated_dir_entry();
+  sub_dir_dir_block = virtual_disk[current_dir_index];
+  sub_dir_dir = &sub_dir_dir_block.dir.entrylist[next_entry];
+  // // this needs to be added to a similar function like next_unallocated_block to create new dir blocks as more files added.
+  // // sub_dir_dir_block.dir.next_entry++;
+
+  // //set the properties of the dir entry
+  memcpy(sub_dir_dir->name, "directory", strlen("a new directory"));
+  sub_dir_dir->first_block = sub_dir_block_index;
+  sub_dir_dir->is_dir = TRUE;
+  sub_dir_dir->unused = FALSE;
+
+  // // update the dirblock
+  write_block(&sub_dir_dir_block, current_dir_index, 'r');
+
   print_directory_structure(root_dir_index, 0);
 }
