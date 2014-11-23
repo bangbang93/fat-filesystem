@@ -2,5 +2,6 @@
 ...
 
 //Questions
--what is the point in keeping track of the file length
--what are file and entry length for?
+- what is the point in keeping track of the file length
+- what are file and entry length for?
+- why does my list dir need to return a pointer to a pointer to a string, why not just print it out?
