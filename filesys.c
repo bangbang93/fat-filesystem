@@ -165,6 +165,7 @@ void format(char *volume_name)
   current_dir_index = root_dir_index;
 
   // set the current dir to a blank entry
+  blank_entry->first_block = root_dir_index;
   current_dir = blank_entry;
 }
 
@@ -245,25 +246,9 @@ int next_unallocated_dir_entry(){
   return virtual_disk[current_dir_index].dir.next_entry++;;
 }
 
-int previous_block_in_chain(int block_index) {
-  for(int i = 0; i < FATENTRYCOUNT; i++){
-    if (FAT[i] == block_index) return i;
-  }
-  return block_index;
-}
-
-int first_block_in_chain(int block_index) {
-  int previous_block_index = 0;
-  while(previous_block_index != block_index){
-    previous_block_index = previous_block_in_chain(block_index);
-    block_index = previous_block_index;
-  }
-  return block_index;
-}
-
 // returns where a file is in the current dir
 int file_entry_index(char *filename){
-  current_dir_index = first_block_in_chain(current_dir_index);
+  current_dir_index = current_dir->first_block;
   while(1){
     for(int i = 0; i < DIRENTRYCOUNT; i++){
       if (memcmp(virtual_disk[current_dir_index].dir.entrylist[i].name, filename, strlen(filename) + 1) == 0)
@@ -468,6 +453,7 @@ void manually_create_file_and_directory(){
 
   // 'cd' to the new sub dir
   current_dir_index = sub_dir_block_index;
+  current_dir->first_block = sub_dir_block_index;
 
   print_directory_structure(root_dir_index, 0);
 }
