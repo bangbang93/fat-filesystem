@@ -1,5 +1,5 @@
 //TODO
-...
+- mylistdir needs to return an array of strings
 
 //Questions
 - what is the point in keeping track of the file length
