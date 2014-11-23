@@ -11,7 +11,7 @@
 diskblock_t virtual_disk[MAXBLOCKS];  // define our in-memory virtual, with MAXBLOCKS blocks
 fatentry_t FAT[MAXBLOCKS];            // define a file allocation table with MAXBLOCKS 16-bit entries
 fatentry_t root_dir_index = 0;          // rootDir will be set by format
-direntry_t *current_dir = NULL;
+direntry_t *current_dir = NULL; //use this to track the location of the first block in a dir block chain
 fatentry_t current_dir_index = 0;
 
 void write_disk(const char *file_name)
@@ -271,6 +271,7 @@ int file_entry_index(char *filename){
     }
 
     if(FAT[current_dir_index] == ENDOFCHAIN) break;
+    current_dir_index = FAT[current_dir_index];
   }
   return -1;
 }
