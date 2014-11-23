@@ -101,24 +101,10 @@ void write_block(diskblock_t *block, int block_address, char type)
   }
 }
 
+// This isn't used, seems to move data from the dist into the block
 // void read_block(diskblock_t *block, int block_address, char type, int print)
 // {
-//   if (type == 'd') { //block is data
-//     if (print == 1)
-//       printf("read block> %d = %s\n", block_address, virtual_disk[block_address].data);
-//     memmove(block->data, virtual_disk[block_address].data, BLOCKSIZE);
-//   }
-//   else if (type == 'f') { // block is fat
-//     if (print == 1) {
-//       printf("read block> %d = ", block_address);
-//       for(int i = 0; i < FATENTRYCOUNT; i++) printf("%d", virtual_disk[block_address].fat[i]);
-//       printf("\n");
-//     }
-//     memmove(block->fat, virtual_disk[block_address].fat, BLOCKSIZE);
-//   }
-//   else {
-//     printf("Invalid Type");
-//   }
+//   memmove(block->data, virtual_disk[block_address].data, BLOCKSIZE);
 // }
 
 void copy_fat(fatentry_t *FAT)
@@ -182,6 +168,7 @@ void format(char *volume_name)
   current_dir = blank_entry;
 }
 
+// clean out any junk memory to give a fresh new data block
 void init_block(diskblock_t *block)
 {
   for (int i = 0; i < BLOCKSIZE; i++) {
@@ -189,6 +176,7 @@ void init_block(diskblock_t *block)
   }
 }
 
+// clean a block and give it a dir structure
 void init_dir_block(diskblock_t *block){
   block->dir.is_dir = TRUE;
   block->dir.next_entry = 0;
@@ -203,6 +191,7 @@ void init_dir_block(diskblock_t *block){
   }
 }
 
+// updates the fat and returns the next place a block can be placed.
 int next_unallocated_block()
 {
   for(int i = 0; i < MAXBLOCKS; i++){
@@ -215,11 +204,11 @@ int next_unallocated_block()
   return -1; //disk is full
 }
 
-// given the next entry this will return the next one, moving to a new dir block if needed
+// given the 'next_entry' this will return the NEXT one, moving to a new dir block if needed
 int next_unallocated_dir_entry(){
   int next_entry = virtual_disk[current_dir_index].dir.next_entry;
   if(next_entry > DIRENTRYCOUNT - 1){
-    //revert next value
+    //revert 'next_entry' value
     virtual_disk[current_dir_index].dir.next_entry = 0;
 
     int new_dir_block_index = next_unallocated_block();
@@ -256,6 +245,8 @@ int next_unallocated_dir_entry(){
   return virtual_disk[current_dir_index].dir.next_entry++;;
 }
 
+// returns where a file is in the current dir
+// TODO make this work over multiple blocks
 int file_entry_index(char *filename){
   for(int i = 0; i < DIRENTRYCOUNT; i++){
     if (memcmp(virtual_disk[current_dir_index].dir.entrylist[i].name, filename, strlen(filename) + 1) == 0)
@@ -264,6 +255,7 @@ int file_entry_index(char *filename){
   return -1;
 }
 
+// used when opening in append mode to go to the end of the file
 void move_pos_to_end(my_file_t *file){
   //last block
   while(1) {
@@ -281,6 +273,7 @@ void move_pos_to_end(my_file_t *file){
   if (file->buffer.data[0] == '\0') file->pos = 0;
 }
 
+// this adds a block at an index to the hierarchy, data or dir
 int add_block_to_directory(int index, char *name, int is_dir) {
   //find a place for it in the directory
   int entry_index = next_unallocated_dir_entry();
@@ -379,6 +372,7 @@ int myfputc(char character, my_file_t *file)
   if (file->pos == BLOCKSIZE){
     file->pos = 0;
     if(FAT[file->blockno] == ENDOFCHAIN) {
+      // TODO: this could be done with create_block
       FAT[file->blockno] = next_unallocated_block();
       file->blockno = FAT[file->blockno];
       FAT[file->blockno] = 0;
@@ -444,6 +438,7 @@ void print_directory_structure(int current_dir_block, int indent){
   }
 }
 
+// keeping this in mind for when functions are needed to create dirs too
 void manually_create_file_and_directory(){
   // create a new block for the file
   int block_index = next_unallocated_block();
