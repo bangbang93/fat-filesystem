@@ -46,7 +46,21 @@ void cgs_c(){
 
 int main() {
   cgs_d();
-  cgs_c();
+  // cgs_c();
+
+  print_fat(10);
+
+  my_file_t *test_file = myfopen("test_file.txt", "w");
+  myfputc('0', test_file);
+  myfputc('0', test_file);
+  myfputc('0', test_file);
+
+  print_fat(10);
+
+  test_file = myfopen("test_file.txt", "w");
+  myfputc('1', test_file);
+  myfputc('1', test_file);
+  myfputc('1', test_file);
 
   // Save the changes made to the virtual disk
   write_disk("virtualdisk\0");
