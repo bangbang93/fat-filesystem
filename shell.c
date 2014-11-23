@@ -48,8 +48,10 @@ int main() {
   cgs_d();
   cgs_c();
 
+  mymkdir("folder");
+
   // Print and Save the changes made to the virtual disk
-  print_fat(10);
+  print_fat(20);
   print_directory_structure(3, 0);
   write_disk("virtualdisk\0");
   return 0;

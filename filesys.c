@@ -457,3 +457,10 @@ void manually_create_file_and_directory(){
 
   print_directory_structure(root_dir_index, 0);
 }
+
+void mymkdir(char *path) {
+  //allocate a new block for the subdir
+  int sub_dir_block_index = next_unallocated_block();
+  create_block(sub_dir_block_index, DIR);
+  add_block_to_directory(sub_dir_block_index, path, TRUE);
+}
