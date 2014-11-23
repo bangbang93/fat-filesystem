@@ -1,2 +1,1 @@
--line 250: file_entry_index needs to work for dirs spanning multiple blocks
 -line 375: needs to use create_block like myfopen does

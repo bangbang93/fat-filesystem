@@ -245,12 +245,33 @@ int next_unallocated_dir_entry(){
   return virtual_disk[current_dir_index].dir.next_entry++;;
 }
 
+int previous_block_in_chain(int block_index) {
+  for(int i = 0; i < FATENTRYCOUNT; i++){
+    if (FAT[i] == block_index) return i;
+  }
+  return block_index;
+}
+
+int first_block_in_chain(int block_index) {
+  int previous_block_index = 0;
+  while(previous_block_index != block_index){
+    previous_block_index = previous_block_in_chain(block_index);
+    block_index = previous_block_index;
+  }
+  return block_index;
+}
+
 // returns where a file is in the current dir
 // TODO make this work over multiple blocks
 int file_entry_index(char *filename){
-  for(int i = 0; i < DIRENTRYCOUNT; i++){
-    if (memcmp(virtual_disk[current_dir_index].dir.entrylist[i].name, filename, strlen(filename) + 1) == 0)
-      return i;
+  current_dir_index = first_block_in_chain(current_dir_index);
+  while(1){
+    for(int i = 0; i < DIRENTRYCOUNT; i++){
+      if (memcmp(virtual_disk[current_dir_index].dir.entrylist[i].name, filename, strlen(filename) + 1) == 0)
+        return i;
+    }
+
+    if(FAT[current_dir_index] == 0) break;
   }
   return -1;
 }

@@ -50,17 +50,16 @@ int main() {
 
   print_fat(10);
 
+  printf("%d\n",first_block_in_chain(1));
+
   my_file_t *test_file = myfopen("test_file.txt", "w");
-  myfputc('0', test_file);
-  myfputc('0', test_file);
-  myfputc('0', test_file);
+  my_file_t *test_file2 = myfopen("test_file2.txt", "w");
+  my_file_t *test_file3 = myfopen("test_file3.txt", "w");
+  my_file_t *test_file4 = myfopen("test_file4.txt", "w");
+  my_file_t *test_file5 = myfopen("test_file.txt", "w");
 
-  print_fat(10);
+  print_directory_structure(3, 0);
 
-  test_file = myfopen("test_file.txt", "w");
-  myfputc('1', test_file);
-  myfputc('1', test_file);
-  myfputc('1', test_file);
 
   // Save the changes made to the virtual disk
   write_disk("virtualdisk\0");
