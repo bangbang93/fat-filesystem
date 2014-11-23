@@ -49,6 +49,7 @@ int main() {
   cgs_c();
 
   mymkdir("folder");
+  printf("%s", mylistdir("folder"));
 
   // Print and Save the changes made to the virtual disk
   print_fat(20);

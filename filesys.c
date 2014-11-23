@@ -464,3 +464,33 @@ void mymkdir(char *path) {
   create_block(sub_dir_block_index, DIR);
   add_block_to_directory(sub_dir_block_index, path, TRUE);
 }
+
+char *mylistdir(char *path) {
+  int initial_current_dir_index = current_dir_index;
+  int location = file_entry_index(path);
+  current_dir_index = virtual_disk[current_dir_index].dir.entrylist[location].first_block;
+
+  char *string = malloc(sizeof(char*));
+
+  // int print_count = 0;
+  while(1){
+    for(int i = 0; i < DIRENTRYCOUNT; i++){
+      if(strlen(virtual_disk[current_dir_index].dir.entrylist[i].name) != 0){
+        // printf("name: '%s'\n", virtual_disk[current_dir_index].dir.entrylist[i].name);
+        strcat(string, virtual_disk[current_dir_index].dir.entrylist[i].name);
+        strcat(string, "\n");
+        // print_count++;
+      }
+    }
+
+    if(FAT[current_dir_index] == ENDOFCHAIN) break;
+    current_dir_index = FAT[current_dir_index];
+  }
+
+  // if (print_count == 0); printf("This folder is empty\n");
+
+  // reset the current_dir_index to its original state
+  current_dir_index = initial_current_dir_index;
+
+  return string;
+}
