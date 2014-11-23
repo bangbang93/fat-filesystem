@@ -196,7 +196,7 @@ int next_unallocated_block()
 {
   for(int i = 0; i < MAXBLOCKS; i++){
     if (FAT[i] == UNUSED){
-      FAT[i] = 0;
+      FAT[i] = ENDOFCHAIN;
       copy_fat(FAT);
       return i;
     }
@@ -270,7 +270,7 @@ int file_entry_index(char *filename){
         return i;
     }
 
-    if(FAT[current_dir_index] == 0) break;
+    if(FAT[current_dir_index] == ENDOFCHAIN) break;
   }
   return -1;
 }
@@ -279,7 +279,7 @@ int file_entry_index(char *filename){
 void move_pos_to_end(my_file_t *file){
   //last block
   while(1) {
-    if(FAT[file->blockno] == 0) break;
+    if(FAT[file->blockno] == ENDOFCHAIN) break;
     file->blockno = FAT[file->blockno];
   }
 
@@ -372,14 +372,13 @@ char myfgetc(my_file_t *file)
 {
   int position = file->pos;
   file->pos++;
-  if ((file->buffer.data[position] == '\0') && (FAT[file->blockno] != 0)){
+  if ((file->buffer.data[position] == '\0') && (FAT[file->blockno] != ENDOFCHAIN)){
     file->pos = 1;
     file->blockno = FAT[file->blockno];
     file->buffer = virtual_disk[file->blockno];
     return file->buffer.data[file->pos - 1];
   }
-  //  fix these values to MAXBLOCKSIZE and ENDOFCHAIN
-  else if ((file->pos > 1024) && FAT[file->blockno] == 0) {
+  else if ((file->pos > BLOCKSIZE) && FAT[file->blockno] == ENDOFCHAIN) {
     return EOF;
   }
   else {
@@ -448,7 +447,7 @@ void print_directory_structure(int current_dir_block, int indent){
       }
     }
 
-    if(FAT[current_dir_block] == 0) break;
+    if(FAT[current_dir_block] == ENDOFCHAIN) break;
     current_dir_block = FAT[current_dir_block];
   }
 }
