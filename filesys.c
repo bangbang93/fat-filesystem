@@ -262,7 +262,6 @@ int first_block_in_chain(int block_index) {
 }
 
 // returns where a file is in the current dir
-// TODO make this work over multiple blocks
 int file_entry_index(char *filename){
   current_dir_index = first_block_in_chain(current_dir_index);
   while(1){
@@ -393,17 +392,12 @@ int myfputc(char character, my_file_t *file)
   if (file->pos == BLOCKSIZE){
     file->pos = 0;
     if(FAT[file->blockno] == ENDOFCHAIN) {
-      // TODO: this could be done with create_block
-      FAT[file->blockno] = next_unallocated_block();
-      file->blockno = FAT[file->blockno];
-      FAT[file->blockno] = 0;
+      int block_index = next_unallocated_block();
+      FAT[file->blockno] = block_index;
       copy_fat(FAT);
 
-      diskblock_t new_block;
-      init_block(&new_block);
-
-      write_block(&new_block, file->blockno, 'd');
-      file->buffer = virtual_disk[file->blockno];
+      file->blockno = block_index;
+      file->buffer = create_block(block_index, DATA);
     }
     else {
       file->blockno = FAT[file->blockno];
