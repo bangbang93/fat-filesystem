@@ -338,7 +338,7 @@ my_file_t *myfopen(char *filename, char *mode)
   int dir_entry_index = file_entry_index(filename);
 
   // if it doesn't exist then create it
-  if(dir_entry_index == -1){
+  if(dir_entry_index == -1 && strncmp(mode, "r", 1) != 0){
     printf("File did not exist. Creating new file: %s\n", filename);
 
     // create a block for it on the disk
@@ -388,6 +388,7 @@ char myfgetc(my_file_t *file)
 
 int myfputc(char character, my_file_t *file)
 {
+  if (strncmp(file->mode, "r", 1) == 0) return 1;
   if (file->pos == BLOCKSIZE){
     file->pos = 0;
     if(FAT[file->blockno] == ENDOFCHAIN) {
