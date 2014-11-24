@@ -460,6 +460,7 @@ void manually_create_file_and_directory(){
 
 void mymkdir(char *path) {
   int initial_current_dir_index = current_dir_index;
+  int initial_current_dir_first_block = current_dir->first_block;
 
   // if the path is an absolute path switch to root before creating
   if (path[0] == '/') {
@@ -488,6 +489,7 @@ void mymkdir(char *path) {
 
   // move back to the original dir index
   current_dir_index = initial_current_dir_index;
+  current_dir->first_block = initial_current_dir_first_block;
 }
 
 char *mylistdir(char *path) {
