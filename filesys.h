@@ -108,7 +108,7 @@ void print_fat(int length);
 void create_file();
 void print_directory_structure(int current_dir_block, int indent);
 void mymkdir(char *path);
-char *mylistdir(char *path);
+char **mylistdir(char *path);
 
 #endif
 

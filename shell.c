@@ -49,7 +49,11 @@ int main() {
   cgs_c();
 
   mymkdir("folder");
-  printf("%s", mylistdir("folder"));
+  char **file_list = mylistdir("folder");
+  for (int i = 0; i < 10; i++){
+    if (strncmp(file_list[i], "\0", 1) == 0) break;
+    printf("%s\n", file_list[i]);
+  }
 
   // Print and Save the changes made to the virtual disk
   print_fat(20);
