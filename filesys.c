@@ -468,6 +468,9 @@ void mymkdir(char *path) {
 char *mylistdir(char *path) {
   int initial_current_dir_index = current_dir_index;
   int location = file_entry_index(path);
+  if (location == -1) {
+    return "Directory does not exist.\n";
+  }
   current_dir_index = virtual_disk[current_dir_index].dir.entrylist[location].first_block;
 
   char *string = malloc(sizeof(char*));
