@@ -461,6 +461,12 @@ void manually_create_file_and_directory(){
 void mymkdir(char *path) {
   int initial_current_dir_index = current_dir_index;
 
+  // if the path is an absolute path switch to root before creating
+  if (path[0] == '/') {
+    current_dir_index = root_dir_index;
+  }
+
+  // not sure why I can't just use path here, life is too short
   char *str = malloc(sizeof(path));
   strcpy(str, path);
 
@@ -476,9 +482,11 @@ void mymkdir(char *path) {
       current_dir_index = sub_dir_block_index;
       current_dir->first_block = sub_dir_block_index;
 
-      //set the next level
+      //set the name for the next level
       dir_name = strtok(NULL, "/");
   }
+
+  // move back to the original dir index
   current_dir_index = initial_current_dir_index;
 }
 
