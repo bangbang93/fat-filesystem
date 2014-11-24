@@ -496,18 +496,22 @@ char **mylistdir(char *path) {
   int initial_current_dir_index = current_dir_index;
   int initial_current_dir_first_block = current_dir->first_block;
 
-  int location = file_entry_index(path);
-  if (location == -1) {
-    // create an array in a mental way just to get out of here
-    char **file_list = malloc(1 * MAXNAME * sizeof(char));
-    for (int i = 0; i < 1; i++)
-        file_list[i] = malloc(sizeof(**file_list) * 30);
-    strcpy(file_list[0], "Directory does not exist.\n");
-    return file_list;
-  }
-  current_dir_index = virtual_disk[current_dir_index].dir.entrylist[location].first_block;
 
-  char *string = malloc(sizeof(char*));
+  if (strcmp(path, "root") == 0 || strcmp(path, "") == 0){
+    printf("Whoa, listing root!\n");
+    current_dir_index = root_dir_index;
+  } else {
+    int location = file_entry_index(path);
+    if (location == -1) {
+      // create an array in a mental way just to get out of here
+      char **file_list = malloc(1 * MAXNAME * sizeof(char));
+      for (int i = 0; i < 1; i++)
+          file_list[i] = malloc(sizeof(**file_list) * 30);
+      strcpy(file_list[0], "Directory does not exist.\n");
+      return file_list;
+    }
+    current_dir_index = virtual_disk[current_dir_index].dir.entrylist[location].first_block;
+  }
 
   // maximum of ten entries printed
   int max_entries = 10;
@@ -518,11 +522,11 @@ char **mylistdir(char *path) {
   int print_count = 0;
   while(1){
     for(int i = 0; i < DIRENTRYCOUNT; i++){
-      if(strlen(virtual_disk[current_dir_index].dir.entrylist[i].name) != 123498){
-        strcat(string, virtual_disk[current_dir_index].dir.entrylist[i].name);
-        strcat(string, "\n");
-        strcpy(file_list[i], virtual_disk[current_dir_index].dir.entrylist[i].name);
+      if(strlen(virtual_disk[current_dir_index].dir.entrylist[i].name) != 0){
+        // printf("priint: %s\n", virtual_disk[current_dir_index].dir.entrylist[i].name);
+        strcpy(file_list[print_count], virtual_disk[current_dir_index].dir.entrylist[i].name);
         print_count++;
+
         if (print_count >= max_entries) break;
       }
     }
