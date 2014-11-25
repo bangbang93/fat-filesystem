@@ -99,7 +99,7 @@ void write_disk(const char * file_name);
 void save_file();
 
 // file handling functions
-my_file_t *myfopen(char *filename, char *mode);
+my_file_t *myfopen(char *path, char *mode);
 char myfgetc(my_file_t *file);
 int myfputc(char character, my_file_t *file);
 int myfclose(my_file_t *file);
@@ -111,6 +111,11 @@ void mymkdir(char *path);
 char **mylistdir(char *path);
 int dir_index_for_path(char *path);
 void print_dir_list(char **list);
+void mycd(char *path);
+void current();
+char **path_to_array(char *path);
+char *last_entry_in_path(char **path);
+int number_of_entries_in_path(char **path);
 
 #endif
 

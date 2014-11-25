@@ -16,7 +16,7 @@ fatentry_t current_dir_index = 0;
 
 void write_disk(const char *file_name)
 {
-  printf("write_disk> %s\n", virtual_disk[0].data);
+  // printf("write_disk> %s\n", virtual_disk[0].data);
   FILE *dest = fopen(file_name, "w");
   fwrite(virtual_disk, sizeof(virtual_disk), 1, dest);
   // write(dest, virtual_disk, sizeof(virtual_disk));
@@ -318,14 +318,22 @@ diskblock_t create_block(int index, int type) {
   return block;
 }
 
-my_file_t *myfopen(char *filename, char *mode)
+my_file_t *myfopen(char *path, char *mode)
 {
-  // find the file in the current directory
+  // only cd if we have a path with many levels
+  if(number_of_entries_in_path(path_to_array(path)) > 1){
+    mycd(path);
+  }
+
+  char filename[MAXNAME];
+  strcpy(filename, last_entry_in_path(path_to_array(path)));
+  strcat(filename, "\0");
+
   int dir_entry_index = file_entry_index(filename);
 
   // if it doesn't exist then create it
   if(dir_entry_index == -1 && strncmp(mode, "r", 1) != 0){
-    printf("File did not exist. Creating new file: %s\n", filename);
+    printf("File did not exist. Creating new file: %s\n", path);
 
     // create a block for it on the disk
     int block_index = next_unallocated_block();
@@ -567,6 +575,7 @@ int dir_index_for_path(char *path){
   int next_dir;
   char *dir_name = strtok(str, "/");
   while (dir_name) {
+      if (strcmp(dir_name, last_entry_in_path(path_to_array(path))) == 0) break;
       location = file_entry_index(dir_name);
       if (location == - 1) return -1;
       next_dir = virtual_disk[current_dir_index].dir.entrylist[location].first_block;
@@ -583,4 +592,64 @@ int dir_index_for_path(char *path){
   current_dir->first_block = initial_current_dir_first_block;
 
   return next_dir;
+}
+
+char **path_to_array(char *path) {
+  int max_entries = 10;
+  char **file_list = malloc(max_entries * 256 * sizeof(char));
+  for (int i = 0; i < max_entries; i++)
+      file_list[i] = malloc(sizeof(**file_list) * 30);
+
+  char str[strlen(path)];
+  strcpy(str, path);
+
+  char *dir_name = strtok(str, "/");
+  file_list[0] = dir_name;
+  int count = 1;
+  while (dir_name) {
+      dir_name = strtok(NULL, "/");
+      if (dir_name == NULL) break;
+      file_list[count] = dir_name;
+      count++;
+  }
+
+  return file_list;
+}
+
+char *last_entry_in_path(char **path){
+  int count = 0;
+  for (int i = 0; i < 10; i++){
+    if(strlen(path[i]) == 0) break;
+    count++;
+  }
+  return path[count-1];
+}
+
+int number_of_entries_in_path(char **path){
+  int count = 0;
+  for (int i = 0; i < 10; i++){
+    if(strlen(path[i]) == 0) break;
+    count++;
+  }
+  return count;
+}
+
+void mycd(char *path){
+  if (strcmp(path, "root") == 0 || strcmp(path, "") == 0){
+    printf("Returning to root...\n");
+    current_dir_index = root_dir_index;
+    current_dir->first_block = root_dir_index;
+    return;
+  }
+  int new_dir = dir_index_for_path(path);
+  if (new_dir == -1) return;
+  current_dir_index = new_dir;
+  current_dir->first_block = new_dir;
+}
+
+void current(){
+  printf("******\n");
+  printf("current_dir_index: %d\n", current_dir_index);
+  printf("first: %d\n", current_dir->first_block);
+  printf("******\n");
 }
