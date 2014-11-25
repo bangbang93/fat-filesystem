@@ -575,9 +575,11 @@ int dir_index_for_path(char *path){
   int next_dir;
   char *dir_name = strtok(str, "/");
   while (dir_name) {
-      if (strcmp(dir_name, last_entry_in_path(path_to_array(path))) == 0) break;
       location = file_entry_index(dir_name);
       if (location == - 1) return -1;
+
+      // unless it's a file...
+      if (virtual_disk[current_dir_index].dir.entrylist[location].is_dir == 0) break;
       next_dir = virtual_disk[current_dir_index].dir.entrylist[location].first_block;
 
       current_dir_index = next_dir;
