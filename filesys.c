@@ -492,6 +492,13 @@ void mymkdir(char *path) {
   current_dir->first_block = initial_current_dir_first_block;
 }
 
+void print_dir_list(char **list){
+  for (int i = 0; i< 10; i++){
+    if(strcmp(list[i],"ENDOFDIR") == 0) break;
+    printf("%s\n", list[i]);
+  }
+}
+
 char **mylistdir(char *path) {
   int initial_current_dir_index = current_dir_index;
   int initial_current_dir_first_block = current_dir->first_block;
@@ -501,7 +508,7 @@ char **mylistdir(char *path) {
     printf("Whoa, listing root!\n");
     current_dir_index = root_dir_index;
   } else {
-    int location = file_entry_index(path);
+    int location = dir_index_for_path(path);
     if (location == -1) {
       // create an array in a mental way just to get out of here
       char **file_list = malloc(1 * MAXNAME * sizeof(char));
@@ -510,7 +517,7 @@ char **mylistdir(char *path) {
       strcpy(file_list[0], "Directory does not exist.\n");
       return file_list;
     }
-    current_dir_index = virtual_disk[current_dir_index].dir.entrylist[location].first_block;
+    current_dir_index = location;
   }
 
   // maximum of ten entries printed
@@ -540,7 +547,13 @@ char **mylistdir(char *path) {
   current_dir_index = initial_current_dir_index;
   current_dir->first_block = initial_current_dir_first_block;
 
-  return file_list;
+  char **file_list_final = malloc((print_count + 1) * MAXNAME * sizeof(char));
+  for (int i = 0; i < print_count; i++){
+    file_list_final[i] = file_list[i];
+  }
+  file_list_final[print_count] = "ENDOFDIR";
+
+  return file_list_final;
 }
 
 char **path_to_array(char *path) {
@@ -565,3 +578,31 @@ char **path_to_array(char *path) {
   return file_list;
 }
 
+int dir_index_for_path(char *path){
+  int initial_current_dir_index = current_dir_index;
+  int initial_current_dir_first_block = current_dir->first_block;
+
+  char str[strlen(path)];
+  strcpy(str, path);
+
+  int location;
+  int next_dir;
+  char *dir_name = strtok(str, "/");
+  while (dir_name) {
+      location = file_entry_index(dir_name);
+      if (location == - 1) return -1;
+      next_dir = virtual_disk[current_dir_index].dir.entrylist[location].first_block;
+
+      current_dir_index = next_dir;
+      current_dir->first_block = next_dir;
+
+      dir_name = strtok(NULL, "/");
+      if (dir_name == NULL) break;
+  }
+
+  // move back to the original dir index
+  current_dir_index = initial_current_dir_index;
+  current_dir->first_block = initial_current_dir_first_block;
+
+  return next_dir;
+}
