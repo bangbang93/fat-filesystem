@@ -1,7 +1,5 @@
 //TODO
-- mylistdir needs to return an array of strings
+-check that dirs aren't being created by mkdir that could be switched to instead.
 
 //Questions
-- what is the point in keeping track of the file length
-- what are file and entry length for?
-- why does my list dir need to return a pointer to a pointer to a string, why not just print it out?
+
