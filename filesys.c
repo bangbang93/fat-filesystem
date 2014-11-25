@@ -511,7 +511,6 @@ char **mylistdir(char *path) {
   int initial_current_dir_index = current_dir_index;
   int initial_current_dir_first_block = current_dir->first_block;
 
-
   if (strcmp(path, "root") == 0 || strcmp(path, "") == 0){
     printf("Whoa, listing root!\n");
     current_dir_index = root_dir_index;
@@ -520,9 +519,10 @@ char **mylistdir(char *path) {
     if (location == -1) {
       // create an array in a mental way just to get out of here
       char **file_list = malloc(1 * MAXNAME * sizeof(char));
-      for (int i = 0; i < 1; i++)
+      for (int i = 0; i < 2; i++)
           file_list[i] = malloc(sizeof(**file_list) * 30);
-      strcpy(file_list[0], "Directory does not exist.\n");
+      strcpy(file_list[0], "Directory does not exist.");
+      strcpy(file_list[1], "ENDOFDIR");
       return file_list;
     }
     current_dir_index = location;
