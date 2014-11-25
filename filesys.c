@@ -471,8 +471,10 @@ void mymkdir(char *path) {
   int initial_current_dir_first_block = current_dir->first_block;
 
   // if the path is an absolute path switch to root before creating
+  // CONFIRM IF THIS IS REQUIRED
   if (path[0] == '/') {
     current_dir_index = root_dir_index;
+    current_dir->first_block = root_dir_index;
   }
 
   // not sure why I can't just use path here, life is too short
@@ -567,6 +569,11 @@ char **mylistdir(char *path) {
 int dir_index_for_path(char *path){
   int initial_current_dir_index = current_dir_index;
   int initial_current_dir_first_block = current_dir->first_block;
+
+  if (path[0] == '/') {
+    current_dir_index = root_dir_index;
+    current_dir->first_block = root_dir_index;
+  }
 
   char str[strlen(path)];
   strcpy(str, path);
