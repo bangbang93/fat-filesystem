@@ -44,10 +44,7 @@ void cgs_c(){
   myfclose(test_file2);
 }
 
-int main() {
-  cgs_d();
-  // cgs_c();
-
+void cgs_b(){
   // - create a directory “/myfirstdir/myseconddir/mythirddir” in the virtual disk
   mymkdir("/myfirstdir/myseconddir/mythirddir");
   // - call mylistdir(“/myfirstdir/myseconddir”): print out the list of strings returned by this function
@@ -57,10 +54,17 @@ int main() {
   write_disk("virtualdiskB3_B1_a\0");
   // - create a file “/myfirstdir/myseconddir/testfile.txt” in the virtual disk
   my_file_t *testfile = myfopen("/myfirstdir/myseconddir/testfile.txt", "w");
+  // - call mylistdir(“/myfirstdir/myseconddir”): print out the list of strings returned by this function
+  list = mylistdir("/myfirstdir/myseconddir");
+  print_dir_list(list);
+  // - write out virtual disk to “virtualdiskB3_B1_b”
+  write_disk("virtualdiskB3_B1_b\0");
+}
 
-  // // - call mylistdir(“/myfirstdir/myseconddir”): print out the list of strings returned by this function
-  // // - write out virtual disk to “virtualdiskB3_B1_b”
-  // write_disk("virtualdiskB3_B1_b\0");
+int main() {
+  cgs_d();
+  cgs_c();
+  cgs_b();
 
   // Print and Save the changes made to the virtual disk
   // print_fat(20);
