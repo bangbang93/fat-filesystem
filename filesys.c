@@ -241,7 +241,7 @@ int next_unallocated_dir_entry(){
     current_dir_index = new_dir_block_index;
 
     // set the current dir to a blank entry
-    current_dir = blank_entry;
+    // current_dir = blank_entry;
   }
   return virtual_disk[current_dir_index].dir.next_entry++;;
 }
