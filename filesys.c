@@ -556,28 +556,6 @@ char **mylistdir(char *path) {
   return file_list_final;
 }
 
-char **path_to_array(char *path) {
-  int max_entries = 10;
-  char **file_list = malloc(max_entries * MAXNAME * sizeof(char));
-  for (int i = 0; i < max_entries; i++)
-      file_list[i] = malloc(sizeof(**file_list) * 30);
-
-  char str[strlen(path)];
-  strcpy(str, path);
-
-  char *dir_name = strtok(str, "/");
-  file_list[0] = dir_name;
-  int count = 1;
-  while (dir_name) {
-      dir_name = strtok(NULL, "/");
-      if (dir_name == NULL) break;
-      file_list[count] = dir_name;
-      count++;
-  }
-
-  return file_list;
-}
-
 int dir_index_for_path(char *path){
   int initial_current_dir_index = current_dir_index;
   int initial_current_dir_first_block = current_dir->first_block;
