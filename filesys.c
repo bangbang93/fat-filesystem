@@ -468,11 +468,11 @@ void mymkdir(char *path) {
   }
 
   // not sure why I can't just use path here, life is too short
-  char *str = malloc(sizeof(path));
+  char str[strlen(path)];
   strcpy(str, path);
 
-  char *dir_name = NULL;
-  dir_name = strtok(str, "/");
+  char *dir_name = strtok(str, "/");
+
   while (dir_name) {
       //allocate a new block for the subdir
       int sub_dir_block_index = next_unallocated_block();
