@@ -579,7 +579,7 @@ int dir_index_for_path(char *path){
   strcpy(str, path);
 
   int location;
-  int next_dir;
+  int next_dir = current_dir_index;
   char *dir_name = strtok(str, "/");
   while (dir_name) {
       location = file_entry_index(dir_name);
