@@ -68,9 +68,63 @@ int main() {
   cgs_c();
   cgs_b();
 
-  myrmdir("/myfirstdir/myseconddir/mythirddir");
-  myrmdir("/myfirstdir/myseconddir");
-  myrmdir("/myfirstdir");
+  // level A
+  format("CS3026 Operating Systems Assessment 2014\0");
+  write_disk("virtualdiskD3_D1\0");
+  // - create a directory “/firstdir/seconddir” in the virtual disk
+  mymkdir("/firstdir/seconddir");
+  // - call myfopen( “/firstdir/seconddir/testfile1.txt” )
+  my_file_t *test_file = myfopen("/firstdir/seconddir/testfile1.txt", "w");
+  // - you may write something into the file
+  char string[] = "Level A Content";
+  for (int i = 0; i < strlen(string); i++){
+    myfputc(string[i], test_file);
+  }
+  myfclose(test_file);
+  // - call mylistdir(“/firstdir/seconddir”): print out the list of strings returned by this function
+  print_dir_list(mylistdir("/firstdir/seconddir"));
+  // - change to directory “/firstdir/seconddir”
+  mychdir("/firstdir/seconddir");
+  // - call mylistdir(“/firstdir/seconddir/” ) or mylistdir(“.”) to list the current dir... & print
+  print_dir_list(mylistdir("/firstdir/seconddir"));
+  // - call myfopen( “testfile2.txt, “w” )
+  my_file_t *test_file2 = myfopen("/testfile2.txt", "w");
+  // - you may write something into the file
+  char string2[] = "Level A Content2";
+  for (int i = 0; i < strlen(string2); i++){
+    myfputc(string[i], test_file2);
+  }
+  // - close the file
+  myfclose(test_file2);
+  // - create directory “thirddir”
+  mymkdir("thirddir");
+
+  // ￼￼￼CGS A5-A1
+  // - call myfopen( “thirddir/testfile3.txt, “w” )
+  my_file_t *test_file3 = myfopen("thirddir/testfile3.txt", "w");
+  // - you may write something into the file
+  char string3[] = "Level A Content3";
+  for (int i = 0; i < strlen(string2); i++){
+    myfputc(string[i], test_file3);
+  }
+  // - close the file
+  myfclose(test_file3);
+  // - write out virtual disk to “virtualdiskA5_A1_a”
+  write_disk("virtualdiskA5_A1_a\0");
+  // - call myremove( “testfile1.txt” )
+  myremove("testfile1.txt");
+  // - call myremove( “testfile2.txt” )
+  // - write out virtual disk to “virtualdiskA5_A1_b”
+  // - call mychdir (thirddir”)
+  // - call myremove( “testfile3.txt”)
+  // - write out virtual disk to “virtualdiskA5_A1_c”
+  // - call mychdir( “/firstdir/seconddir”) or mychdir(“..”)
+  // - call myremdir( “thirddir” )
+  // - call mychdir(“/firstdir”)
+  // - call myrmdir ( “seconddir” )
+  // - call mychdir(“/”) or mychdir(“..”)
+  // - call myrmdir( “firstdir”)
+  // - write out virtual disk to “virtualdiskA5_A1_d”
 
   // Print and Save the changes made to the virtual disk
   printf("\n--------\n");
