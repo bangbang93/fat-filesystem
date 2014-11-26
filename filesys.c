@@ -650,10 +650,56 @@ void mychdir(char *path){
     current_dir->first_block = root_dir_index;
     return;
   }
+
+  if (path[0] == '/') {
+    current_dir_index = root_dir_index;
+    current_dir->first_block = root_dir_index;
+  }
+
   int new_dir = dir_index_for_path(path);
   if (new_dir == -1) return;
   current_dir_index = new_dir;
   current_dir->first_block = new_dir;
+}
+
+// removes a file given it's path
+void myremove(char *path){
+  int initial_current_dir_index = current_dir_index;
+  int initial_current_dir_first_block = current_dir->first_block;
+
+  mychdir(path);
+
+  // set the file name
+  char filename[MAXNAME];
+  strcpy(filename, last_entry_in_path(path_to_array(path)));
+  strcat(filename, "\0");
+
+  int location = file_entry_index(filename);
+
+  if (location == -1) {
+    printf("File not found.\n");
+    return;
+  }
+
+  // clear the fat entries
+  int block_index = virtual_disk[current_dir_index].dir.entrylist[location].first_block;
+  int next_block_index;
+  while(1){
+    next_block_index = FAT[block_index];
+    FAT[block_index] = UNUSED;
+    if (next_block_index == ENDOFCHAIN) break;
+    block_index = next_block_index;
+  }
+  copy_fat(FAT);
+
+  // clear the dir_entry
+  direntry_t *dir_entry = &virtual_disk[current_dir_index].dir.entrylist[location];
+  dir_entry->first_block = 0;
+  dir_entry->unused = 1;
+  strcpy(dir_entry->name, "\0");
+
+  current_dir_index = initial_current_dir_index;
+  current_dir->first_block = initial_current_dir_first_block;
 }
 
 void current(){

@@ -68,10 +68,14 @@ int main() {
   cgs_c();
   cgs_b();
 
+  mychdir("root");
+  my_file_t *charlie = myfopen("charlie.txt", "w");
+  // myremove("/charlie.txt");
+
   // Print and Save the changes made to the virtual disk
+  // printf("--------\n");
   // print_fat(20);
-  printf("--------\n");
   print_directory_structure(3, 0);
-  write_disk("virtualdisk\0");
+  // write_disk("virtualdisk\0");
   return 0;
 }

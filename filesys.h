@@ -116,6 +116,8 @@ void current();
 char **path_to_array(char *path);
 char *last_entry_in_path(char **path);
 int number_of_entries_in_path(char **path);
+void myremove( char * path);
+int file_entry_index(char *filename);
 
 #endif
 
