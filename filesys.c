@@ -696,7 +696,10 @@ void myremove(char *path){
   direntry_t *dir_entry = &virtual_disk[current_dir_index].dir.entrylist[location];
   dir_entry->first_block = 0;
   dir_entry->unused = 1;
-  strcpy(dir_entry->name, "\0");
+  int length = strlen(dir_entry->name);
+  for (int i = 0; i < length; i++){
+    dir_entry->name[i] = '\0';
+  }
 
   current_dir_index = initial_current_dir_index;
   current_dir->first_block = initial_current_dir_first_block;
