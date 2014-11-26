@@ -114,12 +114,21 @@ int main() {
   // - call myremove( “testfile1.txt” )
   myremove("testfile1.txt");
   // - call myremove( “testfile2.txt” )
+  myremove("testfile2.txt");
   // - write out virtual disk to “virtualdiskA5_A1_b”
+  write_disk("virtualdiskA5_A1_b\0");
   // - call mychdir (thirddir”)
+  mychdir("thirddir");
   // - call myremove( “testfile3.txt”)
+  myremove("testfile3.txt");
   // - write out virtual disk to “virtualdiskA5_A1_c”
+  write_disk("virtualdiskA5_A1_c\0");
   // - call mychdir( “/firstdir/seconddir”) or mychdir(“..”)
+  mychdir("/firstdir/seconddir");
+  printf("HERE-------------------------------\n");
+  current();
   // - call myremdir( “thirddir” )
+  myrmdir("thirddir");
   // - call mychdir(“/firstdir”)
   // - call myrmdir ( “seconddir” )
   // - call mychdir(“/”) or mychdir(“..”)
