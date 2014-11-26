@@ -336,6 +336,9 @@ diskblock_t create_block(int index, int type) {
 
 my_file_t *myfopen(char *path, char *mode)
 {
+  int initial_current_dir_index = current_dir_index;
+  int initial_current_dir_first_block = current_dir->first_block;
+
   // only cd if we have a path with many levels
   if(number_of_entries_in_path(path_to_array(path)) > 1){
     mychdir(path);
@@ -374,6 +377,9 @@ my_file_t *myfopen(char *path, char *mode)
   if(strncmp(file->mode, "a", 1) == 0){
     move_pos_to_end(file);
   }
+
+  current_dir_index = initial_current_dir_index;
+  current_dir->first_block = initial_current_dir_first_block;
 
   return file;
 }
