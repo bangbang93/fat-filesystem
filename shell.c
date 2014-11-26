@@ -51,14 +51,14 @@ void cgs_b(){
   mymkdir("/myfirstdir/myseconddir/mythirddir");
   // - call mylistdir(“/myfirstdir/myseconddir”): print out the list of strings returned by this function
   char **list = mylistdir("/myfirstdir/myseconddir");
-  print_dir_list(list);
+  // print_dir_list(list);
   // - write out virtual disk to “virtualdiskB3_B1_a”
   write_disk("virtualdiskB3_B1_a\0");
   // - create a file “/myfirstdir/myseconddir/testfile.txt” in the virtual disk
-  my_file_t *testfile = myfopen("/myfirstdir/myseconddir/testfile.txt", "w");
+  // my_file_t *testfile = myfopen("/myfirstdir/myseconddir/testfile.txt", "w");
   // - call mylistdir(“/myfirstdir/myseconddir”): print out the list of strings returned by this function
   list = mylistdir("/myfirstdir/myseconddir");
-  print_dir_list(list);
+  // print_dir_list(list);
   // - write out virtual disk to “virtualdiskB3_B1_b”
   write_disk("virtualdiskB3_B1_b\0");
 }
@@ -68,14 +68,14 @@ int main() {
   cgs_c();
   cgs_b();
 
-  mychdir("root");
-  my_file_t *charlie = myfopen("charlie.txt", "w");
-  // myremove("/charlie.txt");
+  myrmdir("/myfirstdir/myseconddir/mythirddir");
+  myrmdir("/myfirstdir/myseconddir");
+  myrmdir("/myfirstdir");
 
   // Print and Save the changes made to the virtual disk
-  // printf("--------\n");
+  printf("\n--------\n");
   // print_fat(20);
   print_directory_structure(3, 0);
-  // write_disk("virtualdisk\0");
+  write_disk("virtualdisk\0");
   return 0;
 }

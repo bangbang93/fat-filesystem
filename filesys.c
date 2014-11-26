@@ -721,19 +721,6 @@ void myremove(char *path){
   current_dir->first_block = initial_current_dir_first_block;
 }
 
-char *parent_path(char **path_array){
-  char parent_path[MAXPATHLENGTH];
-  for (int i = 0; i < 10; i++){
-    if(strcmp(path_array[i], last_entry_in_path(path_array)) == 0) break;
-    strcat(parent_path, path_array[i]);
-    strcat(parent_path, "/");
-  }
-  strcat(parent_path, "\0");
-  char *return_parent_path = malloc(sizeof(parent_path));
-  strcpy(return_parent_path, parent_path);
-  return return_parent_path;
-}
-
 // allows empty directories to be deleted.
 void myrmdir(char *path){
   // if it's an abs path then return to root
@@ -748,8 +735,14 @@ void myrmdir(char *path){
     int initial_current_dir_first_block = current_dir->first_block;
 
     // calculate the parent of the dir to remove and chdir to it
-    mychdir(parent_path(path_to_array(path)));
-    current();
+    char *target = strstr(path, last_entry_in_path(path_to_array(path)));
+    int position = target - path;
+    char parent_path[position+1];
+    for(int i = 0; i < position + 1; i++){
+      parent_path[i] = '\0';
+    }
+    strncpy(parent_path, path, position);
+    mychdir(parent_path);
 
     // find the entry for the dir to be deleted
     int entrylist_target = file_entry_index(last_entry_in_path(path_to_array(path)));
