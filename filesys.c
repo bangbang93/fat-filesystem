@@ -721,6 +721,69 @@ void myremove(char *path){
   current_dir->first_block = initial_current_dir_first_block;
 }
 
+char *parent_path(char **path_array){
+  char parent_path[MAXPATHLENGTH];
+  for (int i = 0; i < 10; i++){
+    if(strcmp(path_array[i], last_entry_in_path(path_array)) == 0) break;
+    strcat(parent_path, path_array[i]);
+    strcat(parent_path, "/");
+  }
+  strcat(parent_path, "\0");
+  char *return_parent_path = malloc(sizeof(parent_path));
+  strcpy(return_parent_path, parent_path);
+  return return_parent_path;
+}
+
+// allows empty directories to be deleted.
+void myrmdir(char *path){
+  // if it's an abs path then return to root
+  if (path[0] == '/'){
+    mychdir("root");
+  }
+
+  // if the folder is empty, i.e. the first item is it's list is the ENDOFDIR tag
+  if (strcmp(mylistdir(path)[0], "ENDOFDIR") == 0) {
+    // keep a track of where we start the process as the current dir changes in here, somewhere...
+    int initial_current_dir_index = current_dir_index;
+    int initial_current_dir_first_block = current_dir->first_block;
+
+    // calculate the parent of the dir to remove and chdir to it
+    mychdir(parent_path(path_to_array(path)));
+    current();
+
+    // find the entry for the dir to be deleted
+    int entrylist_target = file_entry_index(last_entry_in_path(path_to_array(path)));
+
+    // find the start of it's block chain
+    int block_chain_target = virtual_disk[current_dir_index].dir.entrylist[entrylist_target].first_block;
+
+    // clear the dir entry and it's name ready for reuse (still don't have that feature)
+    direntry_t *dir_entry = &virtual_disk[current_dir_index].dir.entrylist[entrylist_target];
+    dir_entry->first_block = 0;
+    dir_entry->unused = 1;
+    int length = strlen(dir_entry->name);
+    for (int i = 0; i < length; i++){
+      dir_entry->name[i] = '\0';
+    }
+
+    // clear the dirs block chain and update the fat
+    int next_block_chain_target;
+    while(1){
+      next_block_chain_target = FAT[block_chain_target];
+      FAT[block_chain_target] = UNUSED;
+      if (next_block_chain_target == ENDOFCHAIN) break;
+      block_chain_target = next_block_chain_target;
+    }
+    copy_fat(FAT);
+
+    // go back to where we started!
+    current_dir_index = initial_current_dir_index;
+    current_dir->first_block = initial_current_dir_first_block;
+  } else {
+    printf("That directory has content and cannot be deleted.\n");
+  }
+}
+
 void current(){
   printf("******\n");
   printf("current_dir_index: %d\n", current_dir_index);
