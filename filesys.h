@@ -111,7 +111,7 @@ void mymkdir(char *path);
 char **mylistdir(char *path);
 int dir_index_for_path(char *path);
 void print_dir_list(char **list);
-void mycd(char *path);
+void mychdir(char *path);
 void current();
 char **path_to_array(char *path);
 char *last_entry_in_path(char **path);

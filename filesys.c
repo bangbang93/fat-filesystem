@@ -322,7 +322,7 @@ my_file_t *myfopen(char *path, char *mode)
 {
   // only cd if we have a path with many levels
   if(number_of_entries_in_path(path_to_array(path)) > 1){
-    mycd(path);
+    mychdir(path);
   }
 
   char filename[MAXNAME];
@@ -643,7 +643,7 @@ int number_of_entries_in_path(char **path){
   return count;
 }
 
-void mycd(char *path){
+void mychdir(char *path){
   if (strcmp(path, "root") == 0 || strcmp(path, "") == 0){
     printf("Returning to root...\n");
     current_dir_index = root_dir_index;
