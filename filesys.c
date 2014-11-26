@@ -205,8 +205,24 @@ int next_unallocated_block()
   return -1; //disk is full
 }
 
-// given the 'next_entry' this will return the NEXT one, moving to a new dir block if needed
+// this will return the first free slot in the dir, moving to a new dir block if needed
 int next_unallocated_dir_entry(){
+  // NOT WORKING!!!
+  // look for empty slots
+  // int original_dir_index = current_dir_index;
+  // int current_dir_index = current_dir->first_block;
+  // while(1){
+  //   for(int i = 0; i < DIRENTRYCOUNT; i++){
+  //     if (strlen(virtual_disk[current_dir_index].dir.entrylist[i].name) == 0){
+  //       printf("%d\n", virtual_disk[current_dir_index].dir.entrylist[i].unused);
+  //       return i;
+  //     }
+  //   }
+  //   if(FAT[current_dir_index] == ENDOFCHAIN) break;
+  //   current_dir_index = FAT[current_dir_index];
+  // }
+  // current_dir_index = original_dir_index;
+
   int next_entry = virtual_disk[current_dir_index].dir.next_entry;
   if(next_entry > DIRENTRYCOUNT - 1){
     //revert 'next_entry' value
