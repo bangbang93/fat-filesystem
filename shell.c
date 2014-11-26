@@ -6,6 +6,7 @@
 
 void cgs_d(){
   format("CS3026 Operating Systems Assessment 2014\0");
+  write_disk("virtualdiskD3_D1\0");
 }
 
 void cgs_c(){
@@ -42,6 +43,7 @@ void cgs_c(){
   // printf("\n");
   fclose(f);
   myfclose(test_file2);
+  write_disk("virtualdiskC3_C1\0");
 }
 
 void cgs_b(){
