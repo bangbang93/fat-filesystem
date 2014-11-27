@@ -14,6 +14,7 @@ fatentry_t root_dir_index = 0;          // rootDir will be set by format
 direntry_t *current_dir = NULL; //use this to track the location of the first block in a dir block chain
 fatentry_t current_dir_index = 0;
 
+// Used to write the contents of the virtual_disk in RAM to a 'real' virtual disk file
 void write_disk(const char *file_name)
 {
   // printf("write_disk> %s\n", virtual_disk[0].data);
@@ -23,6 +24,7 @@ void write_disk(const char *file_name)
   fclose(dest);
 }
 
+// I did not implement this function, it it not used.
 void read_disk(const char *file_name)
 {
   FILE *dest = fopen(file_name, "r");
@@ -32,6 +34,7 @@ void read_disk(const char *file_name)
   fclose(dest);
 }
 
+// Used for debugging, prints a formated output of a block given it's type
 void print_block(int block_index, char type)
 {
   if (type == 'd') {
@@ -76,6 +79,7 @@ void print_block(int block_index, char type)
   }
 }
 
+// prints the first N entries of the FAT
 void print_fat(int length)
 {
   for(int i = 0; i < length; i++){
@@ -101,12 +105,14 @@ void write_block(diskblock_t *block, int block_address, char type)
   }
 }
 
-// This isn't used, seems to move data from the dist into the block
+// This isn't used, instead I access the virtual_disk directly
+// This was a mistake and would have been fixed if I had more time.
 // void read_block(diskblock_t *block, int block_address, char type, int print)
 // {
 //   memmove(block->data, virtual_disk[block_address].data, BLOCKSIZE);
 // }
 
+// Given the current FAT array this function writes it's content to the disk
 void copy_fat(fatentry_t *FAT)
 {
   diskblock_t block;
@@ -119,6 +125,7 @@ void copy_fat(fatentry_t *FAT)
   }
 }
 
+// Zeros out the disk and writes the volume name into the first block
 void format(char *volume_name)
 {
   diskblock_t block;
@@ -205,10 +212,11 @@ int next_unallocated_block()
   return -1; //disk is full
 }
 
-// this will return the first free slot in the dir, moving to a new dir block if needed
+// this will return the NEXT slot in the dir, moving to a new dir block if needed
+// I was not able to get the method returning the next empty slot in time for the deadline
+// An attempt at it's implementation is commented out below.
 int next_unallocated_dir_entry(){
-  // NOT WORKING!!!
-  // look for empty slots
+  // looking for empty slots
   // int original_dir_index = current_dir_index;
   // int current_dir_index = current_dir->first_block;
   // while(1){
@@ -334,6 +342,7 @@ diskblock_t create_block(int index, int type) {
   return block;
 }
 
+// Implements the opening of files in various modes (r,w,a)
 my_file_t *myfopen(char *path, char *mode)
 {
   int initial_current_dir_index = current_dir_index;
@@ -384,6 +393,7 @@ my_file_t *myfopen(char *path, char *mode)
   return file;
 }
 
+// implements reading of characters from files
 char myfgetc(my_file_t *file)
 {
   int position = file->pos;
@@ -402,6 +412,7 @@ char myfgetc(my_file_t *file)
   }
 }
 
+// Implements writing of characters to files
 int myfputc(char character, my_file_t *file)
 {
   if (strncmp(file->mode, "r", 1) == 0) return 1;
@@ -435,6 +446,7 @@ int myfclose(my_file_t *file)
   return 0; //unless there's an error?
 }
 
+// Recursively print the directory hierarchy from a given starting point
 void print_directory_structure(int current_dir_block, int indent){
   char string[] = "\0\0\0\0\0\0"; //up to five levels
   int x;
@@ -488,6 +500,7 @@ void manually_create_file_and_directory(){
   print_directory_structure(root_dir_index, 0);
 }
 
+// Implements the creation of a directory for a given path
 void mymkdir(char *path) {
   int initial_current_dir_index = current_dir_index;
   int initial_current_dir_first_block = current_dir->first_block;
@@ -531,6 +544,7 @@ void mymkdir(char *path) {
   current_dir->first_block = initial_current_dir_first_block;
 }
 
+// prints a terminated (ENDOFDIR) array of terminated dir_entry name strings
 void print_dir_list(char **list){
   for (int i = 0; i< 10; i++){
     if(strcmp(list[i],"ENDOFDIR") == 0) break;
@@ -538,6 +552,7 @@ void print_dir_list(char **list){
   }
 }
 
+// returns an array of terminated strings containing the names of the entries at that path
 char **mylistdir(char *path) {
   int initial_current_dir_index = current_dir_index;
   int initial_current_dir_first_block = current_dir->first_block;
@@ -595,6 +610,7 @@ char **mylistdir(char *path) {
   return file_list_final;
 }
 
+// returns the index of the first block for a given path
 int dir_index_for_path(char *path){
   int initial_current_dir_index = current_dir_index;
   int initial_current_dir_first_block = current_dir->first_block;
@@ -632,6 +648,7 @@ int dir_index_for_path(char *path){
   return next_dir;
 }
 
+// builds a path component array using string tokenization
 char **path_to_array(char *path) {
   int max_entries = 10;
   char **file_list = malloc(max_entries * 256 * sizeof(char));
@@ -654,6 +671,7 @@ char **path_to_array(char *path) {
   return file_list;
 }
 
+// returns the last element in a path component array
 char *last_entry_in_path(char **path){
   int count = 0;
   for (int i = 0; i < 10; i++){
@@ -663,6 +681,7 @@ char *last_entry_in_path(char **path){
   return path[count-1];
 }
 
+// Counts the number of elements in a path component array
 int number_of_entries_in_path(char **path){
   int count = 0;
   for (int i = 0; i < 10; i++){
@@ -672,6 +691,7 @@ int number_of_entries_in_path(char **path){
   return count;
 }
 
+// Implements directory switching, switches to the given path
 void mychdir(char *path){
   if (strcmp(path, "root") == 0){
     printf("Returning to root...\n");
@@ -691,7 +711,7 @@ void mychdir(char *path){
   current_dir->first_block = new_dir;
 }
 
-// removes a file given it's path
+// Implements file deletion for a given path
 void myremove(char *path){
   int initial_current_dir_index = current_dir_index;
   int initial_current_dir_first_block = current_dir->first_block;
@@ -734,7 +754,7 @@ void myremove(char *path){
   current_dir->first_block = initial_current_dir_first_block;
 }
 
-// allows empty directories to be deleted.
+// Implements EMPTY directory deletion
 void myrmdir(char *path){
   // if it's an abs path then return to root
   if (path[0] == '/'){
@@ -792,6 +812,7 @@ void myrmdir(char *path){
   }
 }
 
+// this is a debugging function that prints out the current directory state.
 void current(){
   printf("******\n");
   printf("current_dir_index: %d\n", current_dir_index);
