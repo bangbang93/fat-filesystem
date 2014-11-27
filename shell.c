@@ -125,15 +125,18 @@ int main() {
   write_disk("virtualdiskA5_A1_c\0");
   // - call mychdir( “/firstdir/seconddir”) or mychdir(“..”)
   mychdir("/firstdir/seconddir");
-  printf("HERE-------------------------------\n");
-  current();
   // - call myremdir( “thirddir” )
   myrmdir("thirddir");
   // - call mychdir(“/firstdir”)
+  mychdir("/firstdir");
   // - call myrmdir ( “seconddir” )
+  myrmdir("seconddir");
   // - call mychdir(“/”) or mychdir(“..”)
+  mychdir("/");
   // - call myrmdir( “firstdir”)
+  myrmdir("firstdir");
   // - write out virtual disk to “virtualdiskA5_A1_d”
+  write_disk("virtualdiskA5_A1_d\0");
 
   // Print and Save the changes made to the virtual disk
   printf("\n--------\n");

@@ -180,7 +180,7 @@ void init_block(diskblock_t *block)
 // clean a block and give it a dir structure
 void init_dir_block(diskblock_t *block){
   block->dir.is_dir = TRUE;
-  block->dir.next_entry = 0;
+  block->dir.next_entry = 1;
 
   // assign an empty entry for all spaces in the root directory
   direntry_t *blank_entry = malloc(sizeof(direntry_t));
@@ -509,6 +509,13 @@ void mymkdir(char *path) {
       //allocate a new block for the subdir
       int sub_dir_block_index = next_unallocated_block();
       create_block(sub_dir_block_index, DIR);
+
+      // set a link to the parent directory, the current sub directory.
+      virtual_disk[sub_dir_block_index].dir.entrylist[0].unused = FALSE;
+      virtual_disk[sub_dir_block_index].dir.entrylist[0].first_block = sub_dir_block_index;
+      strcpy(virtual_disk[sub_dir_block_index].dir.entrylist[0].name, "..");
+
+      // add to the parents entry list
       add_block_to_directory(sub_dir_block_index, dir_name, TRUE);
 
       // 'cd' to the new sub dir
@@ -666,7 +673,7 @@ int number_of_entries_in_path(char **path){
 }
 
 void mychdir(char *path){
-  if (strcmp(path, "root") == 0 || strcmp(path, "") == 0){
+  if (strcmp(path, "root") == 0){
     printf("Returning to root...\n");
     current_dir_index = root_dir_index;
     current_dir->first_block = root_dir_index;
@@ -735,7 +742,7 @@ void myrmdir(char *path){
   }
 
   // if the folder is empty, i.e. the first item is it's list is the ENDOFDIR tag
-  if (strcmp(mylistdir(path)[0], "ENDOFDIR") == 0) {
+  if (strcmp(mylistdir(path)[1], "ENDOFDIR") == 0) {
     // keep a track of where we start the process as the current dir changes in here, somewhere...
     int initial_current_dir_index = current_dir_index;
     int initial_current_dir_first_block = current_dir->first_block;
@@ -747,9 +754,11 @@ void myrmdir(char *path){
     for(int i = 0; i < position + 1; i++){
       parent_path[i] = '\0';
     }
-    strncpy(parent_path, path, position);
-    mychdir(parent_path);
 
+    strncpy(parent_path, path, position);
+    if(strcmp(parent_path,"") != 0) {
+      mychdir(parent_path);
+    }
     // find the entry for the dir to be deleted
     int entrylist_target = file_entry_index(last_entry_in_path(path_to_array(path)));
 
