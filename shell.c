@@ -63,14 +63,9 @@ void cgs_b(){
   write_disk("virtualdiskB3_B1_b\0");
 }
 
-int main() {
-  cgs_d();
-  cgs_c();
-  cgs_b();
-
-  // level A
+void cgs_a(){
+  //Disk is reformatted as duplicate names are used.
   format("CS3026 Operating Systems Assessment 2014\0");
-  write_disk("virtualdiskD3_D1\0");
   // - create a directory “/firstdir/seconddir” in the virtual disk
   mymkdir("/firstdir/seconddir");
   // - call myfopen( “/firstdir/seconddir/testfile1.txt” )
@@ -137,11 +132,23 @@ int main() {
   myrmdir("firstdir");
   // - write out virtual disk to “virtualdiskA5_A1_d”
   write_disk("virtualdiskA5_A1_d\0");
+}
 
+int main() {
+  cgs_d();
+  cgs_c();
+  cgs_b();
+  // Disk is reformatted as duplicate names are used in this section
+  cgs_a();
+
+  // ---------------------------------------------------
   // Print and Save the changes made to the virtual disk
-  printf("\n--------\n");
-  // print_fat(20);
+  printf("\nDebugging Info\n--------------\n");
+  // Prints out the first n FAT entries
+  print_fat(20);
+  // Recursively prints the directory tree.
   print_directory_structure(3, 0);
-  write_disk("virtualdisk\0");
+  // prints out final virtual disk for debugging.
+  write_disk("test_virtual_disk\0");
   return 0;
 }
