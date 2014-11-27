@@ -481,25 +481,6 @@ void print_directory_structure(int current_dir_block, int indent){
   }
 }
 
-// keeping this in mind for when functions are needed to create dirs too
-void manually_create_file_and_directory(){
-  // create a new block for the file
-  int block_index = next_unallocated_block();
-  create_block(block_index, DATA);
-  add_block_to_directory(block_index, "file.txt", FALSE);
-
-  //allocate a new block for the subdir
-  int sub_dir_block_index = next_unallocated_block();
-  create_block(sub_dir_block_index, DIR);
-  add_block_to_directory(sub_dir_block_index, "directory", TRUE);
-
-  // 'cd' to the new sub dir
-  current_dir_index = sub_dir_block_index;
-  current_dir->first_block = sub_dir_block_index;
-
-  print_directory_structure(root_dir_index, 0);
-}
-
 // Implements the creation of a directory for a given path
 void mymkdir(char *path) {
   int initial_current_dir_index = current_dir_index;
@@ -810,12 +791,4 @@ void myrmdir(char *path){
   } else {
     printf("That directory has content and cannot be deleted.\n");
   }
-}
-
-// this is a debugging function that prints out the current directory state.
-void current(){
-  printf("******\n");
-  printf("current_dir_index: %d\n", current_dir_index);
-  printf("first: %d\n", current_dir->first_block);
-  printf("******\n");
 }
