@@ -37,10 +37,10 @@ void cgs_c(){
       break;
     }
     // print it to the console and write it in the real file
-    // printf("%c", character);
+    printf("%c", character);
     fprintf(f, "%c", character);
   }
-  // printf("\n");
+  printf("\n");
   fclose(f);
   myfclose(test_file2);
   write_disk("virtualdiskC3_C1\0");
